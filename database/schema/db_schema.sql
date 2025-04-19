@@ -2,39 +2,48 @@
 CREATE DATABASE [BTLSQL-ThaiDoHocTapSv];
 GO
 USE [BTLSQL-ThaiDoHocTapSv];
+USE master;
+ALTER DATABASE [BTLSQL-ThaiDoHocTapSv] SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
 GO
 
+drop database [BTLSQL-ThaiDoHocTapSv];
 -- Xóa các đối tượng cũ
-DROP TRIGGER IF EXISTS trg_KiemTra_SoSinhVienToiDa;
-DROP TRIGGER IF EXISTS trg_KiemTra_NgayDiemDanh;
-DROP TRIGGER IF EXISTS trg_KiemTra_TrangThaiSinhVien;
+-- Drop các Trigger theo thứ tự ngược với thứ tự tạo
 DROP TRIGGER IF EXISTS trg_KiemTra_DanhGiaKyHienTai;
+DROP TRIGGER IF EXISTS trg_CapHocBong;
+DROP TRIGGER IF EXISTS trg_CapNhatTyLeDiemDanh;
+DROP TRIGGER IF EXISTS trg_TinhDiemTong;
+DROP TRIGGER IF EXISTS trg_KiemTra_DiemDanh_DangKy;
+DROP TRIGGER IF EXISTS trg_KiemTra_ThoiGianDangKy;
+DROP TRIGGER IF EXISTS trg_KiemTra_TrangThaiSinhVien;
+DROP TRIGGER IF EXISTS trg_KiemTra_NgayDiemDanh;
+DROP TRIGGER IF EXISTS trg_KiemTra_SoSinhVienToiDa;
+DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_DiemRenLuyen;
+DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_DanhGiaSinhVien;
+DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_DiemDanh;
+DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_BuoiHoc;
+DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_DangKyHocPhan;
+DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_LopHocPhan;
+DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_MonHoc;
 DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_SinhVien;
+DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_Lop;
+DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_NganhHoc;
 DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_GiangVien;
 DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_Khoa;
-DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_NganhHoc;
-DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_Lop;
-DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_MonHoc;
-DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_LopHocPhan;
-DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_DangKyHocPhan;
-DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_BuoiHoc;
-DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_DiemDanh;
-DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_DanhGiaSinhVien;
-DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_DiemRenLuyen;
-DROP TRIGGER IF EXISTS trg_KiemTra_ThoiGianDangKy;
-DROP TRIGGER IF EXISTS trg_KiemTra_DiemDanh_DangKy;
-DROP TRIGGER IF EXISTS trg_TinhDiemTong;
-DROP TRIGGER IF EXISTS trg_CapHocBong;
-DROP TRIGGER IF EXISTS trg_CapNhatSoSinhVien;
-DROP TRIGGER IF EXISTS trg_CapNhatTyLeDiemDanh;
+DROP TRIGGER IF EXISTS trg_KiemTra_DanhGia_SauDangKy;
+DROP TRIGGER IF EXISTS trg_KiemTra_SinhVien_DaDangKy;
+DROP TRIGGER IF EXISTS trg_KiemTra_GVCN_Khoa;
 
+-- Drop các Stored Procedure
+DROP PROCEDURE IF EXISTS sp_TaoBuoiHocTuLich;
+
+-- Drop các View
 DROP VIEW IF EXISTS vw_TyLeDiemDanh;
 DROP VIEW IF EXISTS vw_ThongTinHocBong;
 DROP VIEW IF EXISTS vw_TongHopKetQuaHocTap;
 DROP VIEW IF EXISTS vw_ThongKeDanhGiaSinhVien;
-DROP PROCEDURE IF EXISTS sp_TinhDiemRenLuyen;
-DROP PROCEDURE IF EXISTS sp_TaoBuoiHocTuLich;
 
+-- Drop các Table theo thứ tự ngược với thứ tự tạo (để tránh lỗi khóa ngoại)
 DROP TABLE IF EXISTS DiemRenLuyen;
 DROP TABLE IF EXISTS DanhGiaSinhVien;
 DROP TABLE IF EXISTS DiemDanh;
@@ -51,6 +60,7 @@ DROP TABLE IF EXISTS Khoa;
 PRINT N'Đã xóa tất cả các bảng, trigger, view và stored procedure trong database [BTLSQL-ThaiDoHocTapSv]';
 
 -- Bảng Khoa
+
 CREATE TABLE Khoa (
     ma_khoa VARCHAR(10) PRIMARY KEY,
     ten_khoa NVARCHAR(100) NOT NULL,
@@ -90,7 +100,7 @@ CREATE TABLE NganhHoc (
 );
 GO
 
--- Bảng Lớp
+-- Bảng Lớp (Đã xóa CHK_GVCN_Khoa)
 CREATE TABLE Lop (
     ma_lop VARCHAR(10) PRIMARY KEY,
     ten_lop NVARCHAR(100) NOT NULL,
@@ -102,15 +112,7 @@ CREATE TABLE Lop (
     ngay_cap_nhat DATETIME DEFAULT SYSUTCDATETIME(),
     FOREIGN KEY (ma_khoa) REFERENCES Khoa(ma_khoa),
     FOREIGN KEY (ma_nganh) REFERENCES NganhHoc(ma_nganh),
-    FOREIGN KEY (ma_gvcn) REFERENCES GiangVien(ma_giang_vien),
-    CONSTRAINT CHK_GVCN_Khoa CHECK (
-        ma_gvcn IS NULL OR
-        EXISTS (
-            SELECT 1 FROM GiangVien 
-            WHERE GiangVien.ma_giang_vien = Lop.ma_gvcn 
-            AND GiangVien.ma_khoa = Lop.ma_khoa
-        )
-    )
+    FOREIGN KEY (ma_gvcn) REFERENCES GiangVien(ma_giang_vien)
 );
 GO
 
@@ -174,15 +176,15 @@ CREATE TABLE LopHocPhan (
     CONSTRAINT CHK_ThoiGianHocKy CHECK (
         ngay_bat_dau_dang_ky >= 
             CASE hoc_ky 
-                WHEN '1' THEN CAST(SUBSTRING(nam_hoc, 1, 4) AS INT) + '-08-01'
-                WHEN '2' THEN CAST(SUBSTRING(nam_hoc, 1, 4) AS INT) + '-01-01'
-                WHEN N'Hè' THEN CAST(SUBSTRING(nam_hoc, 1, 4) AS INT) + '-06-01'
+                WHEN '1' THEN CAST(SUBSTRING(nam_hoc, 1, 4) + '-08-01' AS DATE)
+                WHEN '2' THEN CAST(SUBSTRING(nam_hoc, 1, 4) + '-01-01' AS DATE)
+                WHEN N'Hè' THEN CAST(SUBSTRING(nam_hoc, 1, 4) + '-06-01' AS DATE)
             END
         AND ngay_ket_thuc_dang_ky <= 
             CASE hoc_ky 
-                WHEN '1' THEN CAST(SUBSTRING(nam_hoc, 1, 4) AS INT) + '-12-31'
-                WHEN '2' THEN CAST(SUBSTRING(nam_hoc, 1, 4) AS INT) + 1 + '-05-31'
-                WHEN N'Hè' THEN CAST(SUBSTRING(nam_hoc, 1, 4) AS INT) + '-07-31'
+                WHEN '1' THEN CAST(SUBSTRING(nam_hoc, 1, 4) + '-12-31' AS DATE)
+                WHEN '2' THEN CAST(CAST(SUBSTRING(nam_hoc, 1, 4) AS INT) + 1 AS VARCHAR) + '-05-31'
+                WHEN N'Hè' THEN CAST(SUBSTRING(nam_hoc, 1, 4) + '-07-31' AS DATE)
             END
     )
 );
@@ -248,7 +250,7 @@ CREATE TABLE DiemDanh (
 );
 GO
 
--- Bảng Đánh giá sinh viên
+-- Bảng Đánh giá sinh viên (Đã xóa CHK_SinhVien_DaDangKy và CHK_DanhGia_SauDangKy)
 CREATE TABLE DanhGiaSinhVien (
     ma_danh_gia INT IDENTITY(1,1) PRIMARY KEY,
     ma_sinh_vien VARCHAR(10) NOT NULL,
@@ -271,26 +273,7 @@ CREATE TABLE DanhGiaSinhVien (
     ngay_cap_nhat DATETIME DEFAULT SYSUTCDATETIME(),
     FOREIGN KEY (ma_sinh_vien) REFERENCES SinhVien(ma_sinh_vien),
     FOREIGN KEY (ma_lhp) REFERENCES LopHocPhan(ma_lhp),
-    FOREIGN KEY (ma_nguoi_danh_gia) REFERENCES GiangVien(ma_giang_vien),
-    CONSTRAINT CHK_SinhVien_DaDangKy CHECK (
-        loai_danh_gia = N'Vi phạm kỷ luật' OR
-        ma_lhp IS NULL OR
-        EXISTS (
-            SELECT 1 FROM DangKyHocPhan
-            WHERE DangKyHocPhan.ma_sinh_vien = DanhGiaSinhVien.ma_sinh_vien
-            AND DangKyHocPhan.ma_lhp = DanhGiaSinhVien.ma_lhp
-        )
-    ),
-    CONSTRAINT CHK_DanhGia_SauDangKy CHECK (
-        loai_danh_gia = N'Vi phạm kỷ luật' OR
-        ma_lhp IS NULL OR
-        ngay_danh_gia >= (
-            SELECT MIN(ngay_dang_ky)
-            FROM DangKyHocPhan
-            WHERE DangKyHocPhan.ma_lhp = DanhGiaSinhVien.ma_lhp
-            AND DangKyHocPhan.ma_sinh_vien = DanhGiaSinhVien.ma_sinh_vien
-        )
-    )
+    FOREIGN KEY (ma_nguoi_danh_gia) REFERENCES GiangVien(ma_giang_vien)
 );
 GO
 
@@ -331,7 +314,82 @@ CREATE INDEX IX_DiemDanh_ma_sinh_vien ON DiemDanh(ma_sinh_vien);
 CREATE INDEX IX_DiemDanh_ma_buoi ON DiemDanh(ma_buoi);
 CREATE INDEX IX_DanhGiaSinhVien_ma_sinh_vien ON DanhGiaSinhVien(ma_sinh_vien);
 GO
+-- Trigger thay thế CHK_GVCN_Khoa cho bảng Lop
+CREATE TRIGGER trg_KiemTra_GVCN_Khoa
+ON Lop
+FOR INSERT, UPDATE
+AS
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM inserted i
+        WHERE i.ma_gvcn IS NOT NULL
+        AND NOT EXISTS (
+            SELECT 1
+            FROM GiangVien gv
+            WHERE gv.ma_giang_vien = i.ma_gvcn
+            AND gv.ma_khoa = i.ma_khoa
+        )
+    )
+    BEGIN
+        RAISERROR (N'Giảng viên chủ nhiệm phải thuộc cùng khoa với lớp.', 16, 1);
+        ROLLBACK TRANSACTION;
+        RETURN;
+    END;
+END;
+GO
 
+-- Trigger thay thế CHK_SinhVien_DaDangKy cho bảng DanhGiaSinhVien
+CREATE TRIGGER trg_KiemTra_SinhVien_DaDangKy
+ON DanhGiaSinhVien
+FOR INSERT, UPDATE
+AS
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM inserted i
+        WHERE i.loai_danh_gia = N'Thái độ học tập'
+        AND i.ma_lhp IS NOT NULL
+        AND NOT EXISTS (
+            SELECT 1
+            FROM DangKyHocPhan dkhp
+            WHERE dkhp.ma_sinh_vien = i.ma_sinh_vien
+            AND dkhp.ma_lhp = i.ma_lhp
+        )
+    )
+    BEGIN
+        RAISERROR (N'Sinh viên chưa đăng ký lớp học phần này nên không thể đánh giá thái độ học tập.', 16, 1);
+        ROLLBACK TRANSACTION;
+        RETURN;
+    END;
+END;
+GO
+
+-- Trigger thay thế CHK_DanhGia_SauDangKy cho bảng DanhGiaSinhVien
+CREATE TRIGGER trg_KiemTra_DanhGia_SauDangKy
+ON DanhGiaSinhVien
+FOR INSERT, UPDATE
+AS
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM inserted i
+        WHERE i.loai_danh_gia = N'Thái độ học tập'
+        AND i.ma_lhp IS NOT NULL
+        AND i.ngay_danh_gia < (
+            SELECT MIN(ngay_dang_ky)
+            FROM DangKyHocPhan dkhp
+            WHERE dkhp.ma_lhp = i.ma_lhp
+            AND dkhp.ma_sinh_vien = i.ma_sinh_vien
+        )
+    )
+    BEGIN
+        RAISERROR (N'Ngày đánh giá phải diễn ra sau ngày đăng ký lớp học phần.', 16, 1);
+        ROLLBACK TRANSACTION;
+        RETURN;
+    END;
+END;
+GO
 -- Trigger cập nhật thời gian Khoa
 CREATE TRIGGER trg_CapNhat_ThoiGian_Khoa
 ON Khoa
@@ -601,7 +659,7 @@ BEGIN
 END;
 GO
 
--- Trigger tính điểm tổng
+-- Trigger tính điểm tổng (Đã sửa lỗi)
 CREATE TRIGGER trg_TinhDiemTong
 ON DangKyHocPhan
 FOR INSERT, UPDATE
@@ -611,24 +669,24 @@ BEGIN
     SET 
         diem_tong = (
             CASE 
-                WHEN diem_giua_ky IS NOT NULL AND diem_cuoi_ky IS NOT NULL AND diem_thuc_hanh IS NOT NULL
-                THEN ROUND((diem_giua_ky * 0.3 + diem_thuc_hanh * 0.2 + diem_cuoi_ky * 0.5), 2)
+                WHEN i.diem_giua_ky IS NOT NULL AND i.diem_cuoi_ky IS NOT NULL AND i.diem_thuc_hanh IS NOT NULL
+                THEN ROUND((i.diem_giua_ky * 0.3 + i.diem_thuc_hanh * 0.2 + i.diem_cuoi_ky * 0.5), 2)
                 ELSE NULL
             END
         ),
         diem_chu = (
             CASE 
-                WHEN diem_giua_ky IS NOT NULL AND diem_cuoi_ky IS NOT NULL AND diem_thuc_hanh IS NOT NULL
+                WHEN i.diem_giua_ky IS NOT NULL AND i.diem_cuoi_ky IS NOT NULL AND i.diem_thuc_hanh IS NOT NULL
                 THEN 
                     CASE 
-                        WHEN ROUND((diem_giua_ky * 0.3 + diem_thuc_hanh * 0.2 + diem_cuoi_ky * 0.5), 2) >= 9.0 THEN 'A+'
-                        WHEN ROUND((diem_giua_ky * 0.3 + diem_thuc_hanh * 0.2 + diem_cuoi_ky * 0.5), 2) >= 8.5 THEN 'A'
-                        WHEN ROUND((diem_giua_ky * 0.3 + diem_thuc_hanh * 0.2 + diem_cuoi_ky * 0.5), 2) >= 8.0 THEN 'B+'
-                        WHEN ROUND((diem_giua_ky * 0.3 + diem_thuc_hanh * 0.2 + diem_cuoi_ky * 0.5), 2) >= 7.0 THEN 'B'
-                        WHEN ROUND((diem_giua_ky * 0.3 + diem_thuc_hanh * 0.2 + diem_cuoi_ky * 0.5), 2) >= 6.5 THEN 'C+'
-                        WHEN ROUND((diem_giua_ky * 0.3 + diem_thuc_hanh * 0.2 + diem_cuoi_ky * 0.5), 2) >= 5.5 THEN 'C'
-                        WHEN ROUND((diem_giua_ky * 0.3 + diem_thuc_hanh * 0.2 + diem_cuoi_ky * 0.5), 2) >= 5.0 THEN 'D+'
-                        WHEN ROUND((diem_giua_ky * 0.3 + diem_thuc_hanh * 0.2 + diem_cuoi_ky * 0.5), 2) >= 4.0 THEN 'D'
+                        WHEN ROUND((i.diem_giua_ky * 0.3 + i.diem_thuc_hanh * 0.2 + i.diem_cuoi_ky * 0.5), 2) >= 9.0 THEN 'A+'
+                        WHEN ROUND((i.diem_giua_ky * 0.3 + i.diem_thuc_hanh * 0.2 + i.diem_cuoi_ky * 0.5), 2) >= 8.5 THEN 'A'
+                        WHEN ROUND((i.diem_giua_ky * 0.3 + i.diem_thuc_hanh * 0.2 + i.diem_cuoi_ky * 0.5), 2) >= 8.0 THEN 'B+'
+                        WHEN ROUND((i.diem_giua_ky * 0.3 + i.diem_thuc_hanh * 0.2 + i.diem_cuoi_ky * 0.5), 2) >= 7.0 THEN 'B'
+                        WHEN ROUND((i.diem_giua_ky * 0.3 + i.diem_thuc_hanh * 0.2 + i.diem_cuoi_ky * 0.5), 2) >= 6.5 THEN 'C+'
+                        WHEN ROUND((i.diem_giua_ky * 0.3 + i.diem_thuc_hanh * 0.2 + i.diem_cuoi_ky * 0.5), 2) >= 5.5 THEN 'C'
+                        WHEN ROUND((i.diem_giua_ky * 0.3 + i.diem_thuc_hanh * 0.2 + i.diem_cuoi_ky * 0.5), 2) >= 5.0 THEN 'D+'
+                        WHEN ROUND((i.diem_giua_ky * 0.3 + i.diem_thuc_hanh * 0.2 + i.diem_cuoi_ky * 0.5), 2) >= 4.0 THEN 'D'
                         ELSE 'F'
                     END
                 ELSE NULL
@@ -639,7 +697,8 @@ BEGIN
 END;
 GO
 
--- Trigger cập nhật tỷ lệ điểm danh
+
+-- Trigger cập nhật tỷ lệ điểm danh (Đã sửa lỗi)
 CREATE TRIGGER trg_CapNhatTyLeDiemDanh
 ON DiemDanh
 FOR INSERT, UPDATE, DELETE
@@ -659,8 +718,8 @@ BEGIN
                 END
             FROM DiemDanh dd
             JOIN BuoiHoc bh ON dd.ma_buoi = bh.ma_buoi
-            WHERE bh.ma_lhp = DangKyHocPhan.ma_lhp
-            AND dd.ma_sinh_vien = DangKyHocPhan.ma_sinh_vien
+            WHERE bh.ma_lhp = dkhp.ma_lhp
+            AND dd.ma_sinh_vien = dkhp.ma_sinh_vien
         ),
         ngay_cap_nhat_ty_le = SYSUTCDATETIME()
     FROM DangKyHocPhan dkhp
@@ -691,32 +750,32 @@ BEGIN
     SET 
         co_hoc_bong = 
             CASE 
-                WHEN diem_trung_binh >= 9.0 AND diem_cuoi_cung >= 90 THEN 1
-                WHEN diem_trung_binh >= 8.0 AND diem_cuoi_cung >= 80 THEN 1
+                WHEN i.diem_trung_binh >= 9.0 AND i.diem_cuoi_cung >= 90 THEN 1
+                WHEN i.diem_trung_binh >= 8.0 AND i.diem_cuoi_cung >= 80 THEN 1
                 ELSE 0
             END,
         loai_hoc_bong = 
             CASE 
-                WHEN diem_trung_binh >= 9.0 AND diem_cuoi_cung >= 90 THEN N'Xuất sắc'
-                WHEN diem_trung_binh >= 8.0 AND diem_cuoi_cung >= 80 THEN N'Khá'
+                WHEN i.diem_trung_binh >= 9.0 AND i.diem_cuoi_cung >= 90 THEN N'Xuất sắc'
+                WHEN i.diem_trung_binh >= 8.0 AND i.diem_cuoi_cung >= 80 THEN N'Khá'
                 ELSE NULL
             END,
         gia_tri_hoc_bong = 
             CASE 
-                WHEN diem_trung_binh >= 9.0 AND diem_cuoi_cung >= 90 THEN 5000000
-                WHEN diem_trung_binh >= 8.0 AND diem_cuoi_cung >= 80 THEN 3000000
+                WHEN i.diem_trung_binh >= 9.0 AND i.diem_cuoi_cung >= 90 THEN 5000000
+                WHEN i.diem_trung_binh >= 8.0 AND i.diem_cuoi_cung >= 80 THEN 3000000
                 ELSE NULL
             END,
         ngay_cap_hoc_bong = 
             CASE 
-                WHEN diem_trung_binh >= 9.0 AND diem_cuoi_cung >= 90 THEN GETDATE()
-                WHEN diem_trung_binh >= 8.0 AND diem_cuoi_cung >= 80 THEN GETDATE()
+                WHEN i.diem_trung_binh >= 9.0 AND i.diem_cuoi_cung >= 90 THEN GETDATE()
+                WHEN i.diem_trung_binh >= 8.0 AND i.diem_cuoi_cung >= 80 THEN GETDATE()
                 ELSE NULL
             END,
         ghi_chu_hoc_bong = 
             CASE 
-                WHEN diem_trung_binh >= 9.0 AND diem_cuoi_cung >= 90 THEN N'Học bổng xuất sắc'
-                WHEN diem_trung_binh >= 8.0 AND diem_cuoi_cung >= 80 THEN N'Học bổng khá'
+                WHEN i.diem_trung_binh >= 9.0 AND i.diem_cuoi_cung >= 90 THEN N'Học bổng xuất sắc'
+                WHEN i.diem_trung_binh >= 8.0 AND i.diem_cuoi_cung >= 80 THEN N'Học bổng khá'
                 ELSE NULL
             END
     FROM DiemRenLuyen drl
