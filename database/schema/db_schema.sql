@@ -23,17 +23,19 @@ DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_ThaiDoHocTap;
 DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_ViPhamKyLuat;
 DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_Diem;
 DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_DiemRenLuyen;
-DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_LichHoc;
 DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_TaiLieuHocTap;
 DROP TRIGGER IF EXISTS trg_CapNhat_ThoiGian_HocBong;
 DROP TRIGGER IF EXISTS trg_KiemTra_ThoiGianDangKy;
 DROP TRIGGER IF EXISTS trg_KiemTra_DiemDanh_DangKy;
 DROP TRIGGER IF EXISTS trg_TinhDiemTong;
 DROP TRIGGER IF EXISTS trg_CapHocBong;
+DROP TRIGGER IF EXISTS trg_CapNhatSoSinhVien;
+DROP TRIGGER IF EXISTS trg_CapNhatTyLeDiemDanh;
 
 -- Xóa các view và stored procedure trước
 DROP VIEW IF EXISTS vw_TyLeDiemDanh;
 DROP PROCEDURE IF EXISTS sp_TinhDiemRenLuyen;
+DROP PROCEDURE IF EXISTS sp_TaoBuoiHocTuLich;
 
 -- Xóa các bảng theo thứ tự
 DROP TABLE IF EXISTS HocBong;
@@ -51,8 +53,8 @@ DROP TABLE IF EXISTS Lop;
 DROP TABLE IF EXISTS NganhHoc;
 DROP TABLE IF EXISTS GiangVien;
 DROP TABLE IF EXISTS Khoa;
-DROP TABLE IF EXISTS LichHoc;
 DROP TABLE IF EXISTS TaiLieuHocTap;
+DROP TABLE IF EXISTS TyLeDiemDanh;
 
 PRINT N'Đã xóa tất cả các bảng, trigger, view và stored procedure trong database [BTLSQL-ThaiDoHocTapSv]';
 
@@ -108,18 +110,14 @@ CREATE TABLE Lop (
     ngay_cap_nhat DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (ma_khoa) REFERENCES Khoa(ma_khoa),
     FOREIGN KEY (ma_nganh) REFERENCES NganhHoc(ma_nganh),
-    FOREIGN KEY (ma_gvcn) REFERENCES GiangVien(ma_giang_vien)
-);
-GO
-
--- Thêm ràng buộc giảng viên chủ nhiệm
-ALTER TABLE Lop ADD CONSTRAINT CHK_GVCN_Khoa
-CHECK (
-    ma_gvcn IS NULL OR
-    EXISTS (
-        SELECT 1 FROM GiangVien 
-        WHERE GiangVien.ma_giang_vien = Lop.ma_gvcn 
-        AND GiangVien.ma_khoa = Lop.ma_khoa
+    FOREIGN KEY (ma_gvcn) REFERENCES GiangVien(ma_giang_vien),
+    CONSTRAINT CHK_GVCN_Khoa CHECK (
+        ma_gvcn IS NULL OR
+        EXISTS (
+            SELECT 1 FROM GiangVien 
+            WHERE GiangVien.ma_giang_vien = Lop.ma_gvcn 
+            AND GiangVien.ma_khoa = Lop.ma_khoa
+        )
     )
 );
 GO
@@ -139,24 +137,14 @@ CREATE TABLE SinhVien (
     thong_tin_phu_huynh NVARCHAR(200),
     ma_lop VARCHAR(10) NOT NULL,
     ma_nganh VARCHAR(10) NOT NULL,
+    ma_khoa VARCHAR(10) NOT NULL, -- Thêm cột ma_khoa
     nam_nhap_hoc INT NOT NULL CHECK (nam_nhap_hoc >= 2000 AND nam_nhap_hoc <= YEAR(GETDATE())),
     trang_thai NVARCHAR(20) NOT NULL DEFAULT N'Đang học' CHECK (trang_thai IN (N'Đang học', N'Bảo lưu', N'Thôi học', N'Tốt nghiệp')),
     ngay_tao DATETIME DEFAULT GETDATE(),
     ngay_cap_nhat DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (ma_lop) REFERENCES Lop(ma_lop),
     FOREIGN KEY (ma_nganh) REFERENCES NganhHoc(ma_nganh),
-    CONSTRAINT CHK_SinhVien_TuoiToiThieu CHECK (DATEDIFF(YEAR, ngay_sinh, GETDATE()) >= 16)
-);
-GO
-
--- Thêm ràng buộc sinh viên thuộc lớp
-ALTER TABLE SinhVien ADD CONSTRAINT CHK_SinhVien_Nganh_Lop
-CHECK (
-    EXISTS (
-        SELECT 1 FROM Lop 
-        WHERE Lop.ma_lop = SinhVien.ma_lop 
-        AND Lop.ma_nganh = SinhVien.ma_nganh
-    )
+    FOREIGN KEY (ma_khoa) REFERENCES Khoa(ma_khoa)
 );
 GO
 
@@ -184,13 +172,27 @@ CREATE TABLE LopHocPhan (
         CAST(SUBSTRING(nam_hoc, 1, 4) AS INT) + 1 = CAST(SUBSTRING(nam_hoc, 6, 4) AS INT)
     ),
     si_so_toi_da INT NOT NULL CHECK (si_so_toi_da > 0 AND si_so_toi_da <= 200),
+    so_sinh_vien_hien_tai INT DEFAULT 0, -- Thêm cột so_sinh_vien_hien_tai
     ngay_bat_dau_dang_ky DATE,
     ngay_ket_thuc_dang_ky DATE,
     ngay_tao DATETIME DEFAULT GETDATE(),
     ngay_cap_nhat DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (ma_mon_hoc) REFERENCES MonHoc(ma_mon_hoc),
     FOREIGN KEY (ma_giang_vien) REFERENCES GiangVien(ma_giang_vien),
-    CONSTRAINT CHK_ThoiGianDangKy CHECK (ngay_ket_thuc_dang_ky IS NULL OR ngay_ket_thuc_dang_ky > ngay_bat_dau_dang_ky)
+    CONSTRAINT CHK_ThoiGianHocKy CHECK (
+        ngay_bat_dau_dang_ky >= 
+            CASE hoc_ky 
+                WHEN '1' THEN CAST(SUBSTRING(nam_hoc, 1, 4) AS INT) + '-08-01'
+                WHEN '2' THEN CAST(SUBSTRING(nam_hoc, 1, 4) AS INT) + '-01-01'
+                WHEN N'Hè' THEN CAST(SUBSTRING(nam_hoc, 1, 4) AS INT) + '-06-01'
+            END
+        AND ngay_ket_thuc_dang_ky <= 
+            CASE hoc_ky 
+                WHEN '1' THEN CAST(SUBSTRING(nam_hoc, 1, 4) AS INT) + '-12-31'
+                WHEN '2' THEN CAST(SUBSTRING(nam_hoc, 1, 4) AS INT) + 1 + '-05-31'
+                WHEN N'Hè' THEN CAST(SUBSTRING(nam_hoc, 1, 4) AS INT) + '-07-31'
+            END
+    )
 );
 GO
 
@@ -217,6 +219,9 @@ CREATE TABLE BuoiHoc (
     gio_bat_dau TIME NOT NULL,
     gio_ket_thuc TIME NOT NULL,
     phong_hoc VARCHAR(20) NOT NULL,
+    thu NVARCHAR(20) CHECK (thu IN (N'Thứ 2', N'Thứ 3', N'Thứ 4', N'Thứ 5', N'Thứ 6', N'Thứ 7', N'Chủ nhật')), -- Thêm cột thu
+    tiet_bat_dau INT CHECK (tiet_bat_dau BETWEEN 1 AND 12), -- Thêm cột tiet_bat_dau
+    tiet_ket_thuc INT CHECK (tiet_ket_thuc BETWEEN 1 AND 12), -- Thêm cột tiet_ket_thuc
     chu_de NVARCHAR(200),
     trang_thai NVARCHAR(20) NOT NULL DEFAULT N'Chưa diễn ra' CHECK (trang_thai IN (N'Đã diễn ra', N'Chưa diễn ra', N'Hủy')),
     ngay_tao DATETIME DEFAULT GETDATE(),
@@ -261,38 +266,21 @@ CREATE TABLE ThaiDoHocTap (
     ngay_cap_nhat DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (ma_sinh_vien) REFERENCES SinhVien(ma_sinh_vien),
     FOREIGN KEY (ma_lhp) REFERENCES LopHocPhan(ma_lhp),
-    FOREIGN KEY (ma_nguoi_danh_gia) REFERENCES GiangVien(ma_giang_vien)
-);
-GO
-
--- Ràng buộc cho ThaiDoHocTap
-ALTER TABLE ThaiDoHocTap ADD CONSTRAINT CHK_NguoiDanhGia_La_GiangVien
-CHECK (
-    EXISTS (
-        SELECT 1 FROM LopHocPhan
-        WHERE LopHocPhan.ma_lhp = ThaiDoHocTap.ma_lhp
-        AND LopHocPhan.ma_giang_vien = ThaiDoHocTap.ma_nguoi_danh_gia
-    )
-);
-GO
-
-ALTER TABLE ThaiDoHocTap ADD CONSTRAINT CHK_SinhVien_DaDangKy
-CHECK (
-    EXISTS (
-        SELECT 1 FROM DangKyHocPhan
-        WHERE DangKyHocPhan.ma_sinh_vien = ThaiDoHocTap.ma_sinh_vien
-        AND DangKyHocPhan.ma_lhp = ThaiDoHocTap.ma_lhp
-    )
-);
-GO
-
-ALTER TABLE ThaiDoHocTap ADD CONSTRAINT CHK_DanhGia_SauDangKy
-CHECK (
-    ngay_danh_gia >= (
-        SELECT MIN(ngay_dang_ky)
-        FROM DangKyHocPhan
-        WHERE DangKyHocPhan.ma_lhp = ThaiDoHocTap.ma_lhp
-        AND DangKyHocPhan.ma_sinh_vien = ThaiDoHocTap.ma_sinh_vien
+    FOREIGN KEY (ma_nguoi_danh_gia) REFERENCES GiangVien(ma_giang_vien),
+    CONSTRAINT CHK_SinhVien_DaDangKy CHECK (
+        EXISTS (
+            SELECT 1 FROM DangKyHocPhan
+            WHERE DangKyHocPhan.ma_sinh_vien = ThaiDoHocTap.ma_sinh_vien
+            AND DangKyHocPhan.ma_lhp = ThaiDoHocTap.ma_lhp
+        )
+    ),
+    CONSTRAINT CHK_DanhGia_SauDangKy CHECK (
+        ngay_danh_gia >= (
+            SELECT MIN(ngay_dang_ky)
+            FROM DangKyHocPhan
+            WHERE DangKyHocPhan.ma_lhp = ThaiDoHocTap.ma_lhp
+            AND DangKyHocPhan.ma_sinh_vien = ThaiDoHocTap.ma_sinh_vien
+        )
     )
 );
 GO
@@ -377,21 +365,6 @@ CREATE TABLE HocBong (
 );
 GO
 
--- Bảng Lịch học
-CREATE TABLE LichHoc (
-    ma_lich INT IDENTITY(1,1) PRIMARY KEY,
-    ma_lhp VARCHAR(20) NOT NULL,
-    thu NVARCHAR(20) CHECK (thu IN (N'Thứ 2', N'Thứ 3', N'Thứ 4', N'Thứ 5', N'Thứ 6', N'Thứ 7', N'Chủ nhật')),
-    gio_bat_dau TIME NOT NULL,
-    gio_ket_thuc TIME NOT NULL,
-    phong_hoc VARCHAR(20) NOT NULL,
-    ngay_tao DATETIME DEFAULT GETDATE(),
-    ngay_cap_nhat DATETIME DEFAULT GETDATE(),
-    FOREIGN KEY (ma_lhp) REFERENCES LopHocPhan(ma_lhp),
-    CONSTRAINT CHK_ThoiGianLichHoc CHECK (gio_ket_thuc > gio_bat_dau)
-);
-GO
-
 -- Bảng Tài liệu học tập
 CREATE TABLE TaiLieuHocTap (
     ma_tai_lieu INT IDENTITY(1,1) PRIMARY KEY,
@@ -404,14 +377,27 @@ CREATE TABLE TaiLieuHocTap (
     ngay_tao DATETIME DEFAULT GETDATE(),
     ngay_cap_nhat DATETIME DEFAULT GETDATE(),
     FOREIGN KEY (ma_lhp) REFERENCES LopHocPhan(ma_lhp),
-    FOREIGN KEY (ma_nguoi_tai_len) REFERENCES GiangVien(ma_giang_vien)
+    FOREIGN KEY (ma_nguoi_tai_len) REFERENCES GiangVien(ma_giang_vien),
+    CONSTRAINT CHK_DuongDan CHECK (duong_dan LIKE '%.pdf' OR duong_dan LIKE '%.docx' OR duong_dan LIKE '%.pptx')
+);
+GO
+
+-- Bảng Tỷ lệ điểm danh
+CREATE TABLE TyLeDiemDanh (
+    ma_sinh_vien VARCHAR(10) NOT NULL,
+    ma_lhp VARCHAR(20) NOT NULL,
+    ty_le_diem_danh DECIMAL(5,2),
+    ngay_cap_nhat DATETIME DEFAULT GETDATE(),
+    PRIMARY KEY (ma_sinh_vien, ma_lhp),
+    FOREIGN KEY (ma_sinh_vien) REFERENCES SinhVien(ma_sinh_vien),
+    FOREIGN KEY (ma_lhp) REFERENCES LopHocPhan(ma_lhp)
 );
 GO
 
 -- Trigger tự động cập nhật ngay_cap_nhat
 CREATE TRIGGER trg_CapNhat_ThoiGian_SinhVien
 ON SinhVien
-AFTER UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     UPDATE SinhVien
@@ -423,7 +409,7 @@ GO
 
 CREATE TRIGGER trg_CapNhat_ThoiGian_GiangVien
 ON GiangVien
-AFTER UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     UPDATE GiangVien
@@ -435,7 +421,7 @@ GO
 
 CREATE TRIGGER trg_CapNhat_ThoiGian_Khoa
 ON Khoa
-AFTER UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     UPDATE Khoa
@@ -447,7 +433,7 @@ GO
 
 CREATE TRIGGER trg_CapNhat_ThoiGian_NganhHoc
 ON NganhHoc
-AFTER UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     UPDATE NganhHoc
@@ -459,7 +445,7 @@ GO
 
 CREATE TRIGGER trg_CapNhat_ThoiGian_Lop
 ON Lop
-AFTER UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     UPDATE Lop
@@ -471,7 +457,7 @@ GO
 
 CREATE TRIGGER trg_CapNhat_ThoiGian_MonHoc
 ON MonHoc
-AFTER UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     UPDATE MonHoc
@@ -483,7 +469,7 @@ GO
 
 CREATE TRIGGER trg_CapNhat_ThoiGian_LopHocPhan
 ON LopHocPhan
-AFTER UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     UPDATE LopHocPhan
@@ -495,7 +481,7 @@ GO
 
 CREATE TRIGGER trg_CapNhat_ThoiGian_DangKyHocPhan
 ON DangKyHocPhan
-AFTER UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     UPDATE DangKyHocPhan
@@ -507,7 +493,7 @@ GO
 
 CREATE TRIGGER trg_CapNhat_ThoiGian_BuoiHoc
 ON BuoiHoc
-AFTER UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     UPDATE BuoiHoc
@@ -519,7 +505,7 @@ GO
 
 CREATE TRIGGER trg_CapNhat_ThoiGian_DiemDanh
 ON DiemDanh
-AFTER UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     UPDATE DiemDanh
@@ -531,7 +517,7 @@ GO
 
 CREATE TRIGGER trg_CapNhat_ThoiGian_ThaiDoHocTap
 ON ThaiDoHocTap
-AFTER UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     UPDATE ThaiDoHocTap
@@ -543,7 +529,7 @@ GO
 
 CREATE TRIGGER trg_CapNhat_ThoiGian_ViPhamKyLuat
 ON ViPhamKyLuat
-AFTER UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     UPDATE ViPhamKyLuat
@@ -555,7 +541,7 @@ GO
 
 CREATE TRIGGER trg_CapNhat_ThoiGian_Diem
 ON Diem
-AFTER UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     UPDATE Diem
@@ -567,7 +553,7 @@ GO
 
 CREATE TRIGGER trg_CapNhat_ThoiGian_DiemRenLuyen
 ON DiemRenLuyen
-AFTER UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     UPDATE DiemRenLuyen
@@ -577,21 +563,9 @@ BEGIN
 END;
 GO
 
-CREATE TRIGGER trg_CapNhat_ThoiGian_LichHoc
-ON LichHoc
-AFTER UPDATE
-AS
-BEGIN
-    UPDATE LichHoc
-    SET ngay_cap_nhat = GETDATE()
-    FROM LichHoc lh
-    INNER JOIN inserted i ON lh.ma_lich = i.ma_lich;
-END;
-GO
-
 CREATE TRIGGER trg_CapNhat_ThoiGian_TaiLieuHocTap
 ON TaiLieuHocTap
-AFTER UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     UPDATE TaiLieuHocTap
@@ -603,7 +577,7 @@ GO
 
 CREATE TRIGGER trg_CapNhat_ThoiGian_HocBong
 ON HocBong
-AFTER UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     UPDATE HocBong
@@ -614,29 +588,29 @@ END;
 GO
 
 -- Trigger kiểm tra số lượng sinh viên đăng ký
-CREATE TRIGGER trg_KiemTra_SoSinhVienToiDa
+CREATE TRIGGER trg_CapNhatSoSinhVien
 ON DangKyHocPhan
-AFTER INSERT, UPDATE
+FOR INSERT, UPDATE, DELETE
 AS
 BEGIN
-    DECLARE @ma_lhp VARCHAR(20);
-    DECLARE @si_so_toi_da INT;
-    DECLARE @so_luong_hien_tai INT;
-    
-    SELECT @ma_lhp = ma_lhp FROM inserted;
-    
-    SELECT @si_so_toi_da = si_so_toi_da 
-    FROM LopHocPhan 
-    WHERE ma_lhp = @ma_lhp;
-    
-    SELECT @so_luong_hien_tai = COUNT(*) 
-    FROM DangKyHocPhan 
-    WHERE ma_lhp = @ma_lhp AND trang_thai IN (N'Đăng ký', N'Đang học', N'Hoàn thành');
-    
-    IF @so_luong_hien_tai > @si_so_toi_da
+    UPDATE LopHocPhan
+    SET so_sinh_vien_hien_tai = (
+        SELECT COUNT(*)
+        FROM DangKyHocPhan dk
+        WHERE dk.ma_lhp = LopHocPhan.ma_lhp
+        AND dk.trang_thai IN (N'Đăng ký', N'Đang học', N'Hoàn thành')
+    )
+    FROM LopHocPhan
+    WHERE ma_lhp IN (SELECT ma_lhp FROM inserted UNION SELECT ma_lhp FROM deleted);
+
+    IF EXISTS (
+        SELECT 1
+        FROM LopHocPhan
+        WHERE so_sinh_vien_hien_tai > si_so_toi_da
+    )
     BEGIN
         ROLLBACK TRANSACTION;
-        THROW 50001, N'Số lượng sinh viên đăng ký đã vượt quá sĩ số tối đa của lớp học phần', 1;
+        THROW 50001, N'Số lượng sinh viên vượt quá sĩ số tối đa', 1;
     END
 END;
 GO
@@ -644,7 +618,7 @@ GO
 -- Trigger kiểm tra ngày điểm danh
 CREATE TRIGGER trg_KiemTra_NgayDiemDanh
 ON DiemDanh
-AFTER INSERT, UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     IF EXISTS (
@@ -663,7 +637,7 @@ GO
 -- Trigger kiểm tra trạng thái sinh viên
 CREATE TRIGGER trg_KiemTra_TrangThaiSinhVien
 ON DangKyHocPhan
-AFTER INSERT, UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     IF EXISTS (
@@ -682,7 +656,7 @@ GO
 -- Trigger kiểm tra đánh giá thái độ
 CREATE TRIGGER trg_KiemTra_DanhGiaKyHienTai
 ON ThaiDoHocTap
-AFTER INSERT, UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     IF EXISTS (
@@ -702,18 +676,20 @@ GO
 -- Trigger kiểm tra thời gian đăng ký
 CREATE TRIGGER trg_KiemTra_ThoiGianDangKy
 ON DangKyHocPhan
-AFTER INSERT, UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     IF EXISTS (
         SELECT 1 
         FROM inserted i
         JOIN LopHocPhan lhp ON i.ma_lhp = lhp.ma_lhp
-        WHERE i.ngay_dang_ky < lhp.ngay_bat_dau_dang_ky OR i.ngay_dang_ky > lhp.ngay_ket_thuc_dang_ky
+        WHERE i.ngay_dang_ky < lhp.ngay_bat_dau_dang_ky 
+           OR i.ngay_dang_ky > lhp.ngay_ket_thuc_dang_ky
+           OR lhp.ngay_ket_thuc_dang_ky <= lhp.ngay_bat_dau_dang_ky
     )
     BEGIN
         ROLLBACK TRANSACTION;
-        THROW 50005, N'Đăng ký học phần chỉ được thực hiện trong khoảng thời gian cho phép', 1;
+        THROW 50005, N'Ngày đăng ký không hợp lệ hoặc thời gian đăng ký của lớp học phần không hợp lý', 1;
     END
 END;
 GO
@@ -721,7 +697,7 @@ GO
 -- Trigger kiểm tra đăng ký trước điểm danh
 CREATE TRIGGER trg_KiemTra_DiemDanh_DangKy
 ON DiemDanh
-AFTER INSERT, UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     IF NOT EXISTS (
@@ -741,32 +717,41 @@ GO
 -- Trigger tính điểm tổng
 CREATE TRIGGER trg_TinhDiemTong
 ON Diem
-AFTER INSERT, UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
-    UPDATE Diem
-    SET diem_tong = (COALESCE(diem_giua_ky, 0) * 0.3 + COALESCE(diem_thuc_hanh, 0) * 0.2 + COALESCE(diem_cuoi_ky, 0) * 0.5),
-        diem_chu = CASE
-            WHEN (COALESCE(diem_giua_ky, 0) * 0.3 + COALESCE(diem_thuc_hanh, 0) * 0.2 + COALESCE(diem_cuoi_ky, 0) * 0.5) >= 9.0 THEN 'A+'
-            WHEN (COALESCE(diem_giua_ky, 0) * 0.3 + COALESCE(diem_thuc_hanh, 0) * 0.2 + COALESCE(diem_cuoi_ky, 0) * 0.5) >= 8.5 THEN 'A'
-            WHEN (COALESCE(diem_giua_ky, 0) * 0.3 + COALESCE(diem_thuc_hanh, 0) * 0.2 + COALESCE(diem_cuoi_ky, 0) * 0.5) >= 8.0 THEN 'B+'
-            WHEN (COALESCE(diem_giua_ky, 0) * 0.3 + COALESCE(diem_thuc_hanh, 0) * 0.2 + COALESCE(diem_cuoi_ky, 0) * 0.5) >= 7.0 THEN 'B'
-            WHEN (COALESCE(diem_giua_ky, 0) * 0.3 + COALESCE(diem_thuc_hanh, 0) * 0.2 + COALESCE(diem_cuoi_ky, 0) * 0.5) >= 6.5 THEN 'C+'
-            WHEN (COALESCE(diem_giua_ky, 0) * 0.3 + COALESCE(diem_thuc_hanh, 0) * 0.2 + COALESCE(diem_cuoi_ky, 0) * 0.5) >= 5.5 THEN 'C'
-            WHEN (COALESCE(diem_giua_ky, 0) * 0.3 + COALESCE(diem_thuc_hanh, 0) * 0.2 + COALESCE(diem_cuoi_ky, 0) * 0.5) >= 5.0 THEN 'D+'
-            WHEN (COALESCE(diem_giua_ky, 0) * 0.3 + COALESCE(diem_thuc_hanh, 0) * 0.2 + COALESCE(diem_cuoi_ky, 0) * 0.5) >= 4.0 THEN 'D'
-            ELSE 'F'
-        END
-    FROM Diem d
-    INNER JOIN inserted i ON d.ma_diem = i.ma_diem
-    WHERE i.diem_giua_ky IS NOT NULL AND i.diem_thuc_hanh IS NOT NULL AND i.diem_cuoi_ky IS NOT NULL;
+    IF UPDATE(diem_giua_ky) OR UPDATE(diem_thuc_hanh) OR UPDATE(diem_cuoi_ky)
+    BEGIN
+        UPDATE Diem
+        SET diem_tong = (
+                COALESCE(diem_giua_ky, 0) * 0.3 + 
+                COALESCE(diem_thuc_hanh, 0) * 0.2 + 
+                COALESCE(diem_cuoi_ky, 0) * 0.5
+            ),
+            diem_chu = CASE
+                WHEN (COALESCE(diem_giua_ky, 0) * 0.3 + COALESCE(diem_thuc_hanh, 0) * 0.2 + COALESCE(diem_cuoi_ky, 0) * 0.5) >= 9.0 THEN 'A+'
+                WHEN (COALESCE(diem_giua_ky, 0) * 0.3 + COALESCE(diem_thuc_hanh, 0) * 0.2 + COALESCE(diem_cuoi_ky, 0) * 0.5) >= 8.5 THEN 'A'
+                WHEN (COALESCE(diem_giua_ky, 0) * 0.3 + COALESCE(diem_thuc_hanh, 0) * 0.2 + COALESCE(diem_cuoi_ky, 0) * 0.5) >= 8.0 THEN 'B+'
+                WHEN (COALESCE(diem_giua_ky, 0) * 0.3 + COALESCE(diem_thuc_hanh, 0) * 0.2 + COALESCE(diem_cuoi_ky, 0) * 0.5) >= 7.0 THEN 'B'
+                WHEN (COALESCE(diem_giua_ky, 0) * 0.3 + COALESCE(diem_thuc_hanh, 0) * 0.2 + COALESCE(diem_cuoi_ky, 0) * 0.5) >= 6.5 THEN 'C+'
+                WHEN (COALESCE(diem_giua_ky, 0) * 0.3 + COALESCE(diem_thuc_hanh, 0) * 0.2 + COALESCE(diem_cuoi_ky, 0) * 0.5) >= 5.5 THEN 'C'
+                WHEN (COALESCE(diem_giua_ky, 0) * 0.3 + COALESCE(diem_thuc_hanh, 0) * 0.2 + COALESCE(diem_cuoi_ky, 0) * 0.5) >= 5.0 THEN 'D+'
+                WHEN (COALESCE(diem_giua_ky, 0) * 0.3 + COALESCE(diem_thuc_hanh, 0) * 0.2 + COALESCE(diem_cuoi_ky, 0) * 0.5) >= 4.0 THEN 'D'
+                ELSE 'F'
+            END
+        FROM Diem d
+        INNER JOIN inserted i ON d.ma_diem = i.ma_diem
+        WHERE i.diem_giua_ky IS NOT NULL 
+          AND i.diem_thuc_hanh IS NOT NULL 
+          AND i.diem_cuoi_ky IS NOT NULL;
+    END
 END;
 GO
 
 -- Trigger tự động gán học bổng
 CREATE TRIGGER trg_CapHocBong
 ON DiemRenLuyen
-AFTER INSERT, UPDATE
+FOR INSERT, UPDATE
 AS
 BEGIN
     DECLARE @ma_sinh_vien VARCHAR(10);
@@ -775,14 +760,12 @@ BEGIN
     DECLARE @diem_ren_luyen INT;
     DECLARE @diem_trung_binh DECIMAL(4,2);
 
-    -- Lấy thông tin từ DiemRenLuyen
     SELECT @ma_sinh_vien = i.ma_sinh_vien, 
            @hoc_ky = i.hoc_ky, 
            @nam_hoc = i.nam_hoc, 
            @diem_ren_luyen = i.diem_cuoi_cung
     FROM inserted i;
 
-    -- Tính điểm trung bình học tập
     SELECT @diem_trung_binh = AVG(d.diem_tong)
     FROM Diem d
     JOIN DangKyHocPhan dk ON d.ma_dang_ky = dk.ma_dang_ky
@@ -791,7 +774,6 @@ BEGIN
     AND lhp.hoc_ky = @hoc_ky
     AND lhp.nam_hoc = @nam_hoc;
 
-    -- Kiểm tra điều kiện học bổng
     IF @diem_ren_luyen >= 90 AND @diem_trung_binh >= 9.0
     BEGIN
         INSERT INTO HocBong (ma_sinh_vien, hoc_ky, nam_hoc, loai_hoc_bong, gia_tri_hoc_bong, diem_ren_luyen, diem_trung_binh, ngay_cap, ghi_chu)
@@ -805,45 +787,151 @@ BEGIN
 END;
 GO
 
--- Tạo chỉ mục
-CREATE INDEX idx_ma_sinh_vien ON DangKyHocPhan(ma_sinh_vien);
-CREATE INDEX idx_ma_lhp ON DangKyHocPhan(ma_lhp);
-CREATE INDEX idx_ma_buoi ON DiemDanh(ma_buoi);
-CREATE INDEX idx_ma_sinh_vien_diem_danh ON DiemDanh(ma_sinh_vien);
-CREATE INDEX idx_ma_lhp_thai_do_hoc_tap ON ThaiDoHocTap(ma_lhp);
-CREATE INDEX idx_ma_sinh_vien_thai_do_hoc_tap ON ThaiDoHocTap(ma_sinh_vien);
-CREATE INDEX idx_ma_sinh_vien_vi_pham_ky_luat ON ViPhamKyLuat(ma_sinh_vien);
-CREATE INDEX idx_ma_dang_ky_diem ON Diem(ma_dang_ky);
-CREATE INDEX idx_ma_sinh_vien_diem_ren_luyen ON DiemRenLuyen(ma_sinh_vien);
-CREATE INDEX idx_ma_lhp_lich_hoc ON LichHoc(ma_lhp);
-CREATE INDEX idx_ma_lhp_tai_lieu_hoc_tap ON TaiLieuHocTap(ma_lhp);
-CREATE INDEX idx_ma_sinh_vien_hoc_bong ON HocBong(ma_sinh_vien);
+-- Trigger cập nhật tỷ lệ điểm danh
+CREATE TRIGGER trg_CapNhatTyLeDiemDanh
+ON DiemDanh
+FOR INSERT, UPDATE, DELETE
+AS
+BEGIN
+    MERGE INTO TyLeDiemDanh AS target
+    USING (
+        SELECT 
+            dk.ma_sinh_vien,
+            dk.ma_lhp,
+            COUNT(CASE WHEN dd.trang_thai = N'Có mặt' THEN 1 END) * 100.0 / NULLIF(COUNT(dd.ma_diem_danh), 0) AS ty_le
+        FROM DangKyHocPhan dk
+        LEFT JOIN BuoiHoc bh ON bh.ma_lhp = dk.ma_lhp
+        LEFT JOIN DiemDanh dd ON dd.ma_sinh_vien = dk.ma_sinh_vien AND dd.ma_buoi = bh.ma_buoi
+        WHERE bh.trang_thai = N'Đã diễn ra'
+          AND dk.ma_lhp IN (
+              SELECT bh.ma_lhp 
+              FROM BuoiHoc bh 
+              JOIN inserted i ON bh.ma_buoi = i.ma_buoi
+              UNION
+              SELECT bh.ma_lhp 
+              FROM BuoiHoc bh 
+              JOIN deleted d ON bh.ma_buoi = d.ma_buoi
+          )
+        GROUP BY dk.ma_sinh_vien, dk.ma_lhp
+    ) AS source
+    ON target.ma_sinh_vien = source.ma_sinh_vien AND target.ma_lhp = source.ma_lhp
+    WHEN MATCHED THEN
+        UPDATE SET ty_le_diem_danh = source.ty_le, ngay_cap_nhat = GETDATE()
+    WHEN NOT MATCHED THEN
+        INSERT (ma_sinh_vien, ma_lhp, ty_le_diem_danh, ngay_cap_nhat)
+        VALUES (source.ma_sinh_vien, source.ma_lhp, source.ty_le, GETDATE());
+END;
 GO
 
--- View tính tỷ lệ chuyên cần
-CREATE VIEW vw_TyLeDiemDanh AS
-SELECT 
-    dk.ma_sinh_vien,
-    dk.ma_lhp,
-    COUNT(CASE WHEN dd.trang_thai = N'Có mặt' THEN 1 END) * 100.0 / COUNT(dd.ma_diem_danh) AS ty_le_diem_danh
-FROM DangKyHocPhan dk
-LEFT JOIN BuoiHoc bh ON bh.ma_lhp = dk.ma_lhp
-LEFT JOIN DiemDanh dd ON dd.ma_sinh_vien = dk.ma_sinh_vien AND dd.ma_buoi = bh.ma_buoi
-WHERE bh.trang_thai = N'Đã diễn ra'
-GROUP BY dk.ma_sinh_vien, dk.ma_lhp;
+-- Stored Procedure tạo buổi học từ lịch
+CREATE PROCEDURE sp_TaoBuoiHocTuLich
+    @ma_lhp VARCHAR(20),
+    @thu NVARCHAR(20),
+    @tiet_bat_dau INT,
+    @tiet_ket_thuc INT,
+    @phong_hoc VARCHAR(20),
+    @ngay_bat_dau DATE,
+    @ngay_ket_thuc DATE
+AS
+BEGIN
+    DECLARE @current_date DATE = @ngay_bat_dau;
+    DECLARE @day_of_week INT;
+    DECLARE @gio_bat_dau TIME;
+    DECLARE @gio_ket_thuc TIME;
+
+    -- Gán thời gian dựa trên tiết học
+    SET @gio_bat_dau = CASE @tiet_bat_dau
+        WHEN 1 THEN '07:00:00'
+        WHEN 2 THEN '07:50:00'
+        WHEN 3 THEN '08:40:00'
+        WHEN 4 THEN '09:30:00'
+        WHEN 5 THEN '10:20:00'
+        WHEN 6 THEN '11:10:00'
+        WHEN 7 THEN '12:30:00'
+        WHEN 8 THEN '13:20:00'
+        WHEN 9 THEN '14:10:00'
+        WHEN 10 THEN '15:00:00'
+        WHEN 11 THEN '15:50:00'
+        WHEN 12 THEN '16:40:00'
+    END;
+
+    SET @gio_ket_thuc = CASE @tiet_ket_thuc
+        WHEN 1 THEN '07:50:00'
+        WHEN 2 THEN '08:40:00'
+        WHEN 3 THEN '09:30:00'
+        WHEN 4 THEN '10:20:00'
+        WHEN 5 THEN '11:10:00'
+        WHEN 6 THEN '12:00:00'
+        WHEN 7 THEN '13:20:00'
+        WHEN 8 THEN '14:10:00'
+        WHEN 9 THEN '15:00:00'
+        WHEN 10 THEN '15:50:00'
+        WHEN 11 THEN '16:40:00'
+        WHEN 12 THEN '17:30:00'
+    END;
+
+    WHILE @current_date <= @ngay_ket_thuc
+    BEGIN
+        SET @day_of_week = DATEPART(WEEKDAY, @current_date);
+        IF (@thu = N'Thứ 2' AND @day_of_week = 2) OR
+           (@thu = N'Thứ 3' AND @day_of_week = 3) OR
+           (@thu = N'Thứ 4' AND @day_of_week = 4) OR
+           (@thu = N'Thứ 5' AND @day_of_week = 5) OR
+           (@thu = N'Thứ 6' AND @day_of_week = 6) OR
+           (@thu = N'Thứ 7' AND @day_of_week = 7) OR
+           (@thu = N'Chủ nhật' AND @day_of_week = 1)
+        BEGIN
+            INSERT INTO BuoiHoc (ma_lhp, ngay_hoc, gio_bat_dau, gio_ket_thuc, phong_hoc, thu, tiet_bat_dau, tiet_ket_thuc, trang_thai)
+            VALUES (@ma_lhp, @current_date, @gio_bat_dau, @gio_ket_thuc, @phong_hoc, @thu, @tiet_bat_dau, @tiet_ket_thuc, N'Chưa diễn ra');
+        END
+        SET @current_date = DATEADD(DAY, 1, @current_date);
+    END
+END;
 GO
 
+-- Stored Procedure tính điểm rèn luyện
 -- Stored Procedure tính điểm rèn luyện
 CREATE PROCEDURE sp_TinhDiemRenLuyen
     @ma_sinh_vien VARCHAR(10),
     @hoc_ky VARCHAR(1),
     @nam_hoc VARCHAR(9),
-    @diem_thai_do INT
+    @diem_thai_do INT,
+    @ma_nguoi_danh_gia VARCHAR(10) = 'GV001'
 AS
 BEGIN
-    DECLARE @so_vi_pham INT;
+    SET NOCOUNT ON;
 
-    -- Tính số vi phạm trong năm học
+    -- Kiểm tra sinh viên tồn tại
+    IF NOT EXISTS (SELECT 1 FROM SinhVien WHERE ma_sinh_vien = @ma_sinh_vien)
+    BEGIN
+        THROW 50007, N'Sinh viên không tồn tại', 1;
+        RETURN;
+    END
+
+    -- Kiểm tra học kỳ hợp lệ
+    IF @hoc_ky NOT IN ('1', '2')
+    BEGIN
+        THROW 50008, N'Học kỳ không hợp lệ', 1;
+        RETURN;
+    END
+
+    -- Kiểm tra năm học hợp lệ
+    IF @nam_hoc NOT LIKE '[0-9][0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]'
+       OR CAST(SUBSTRING(@nam_hoc, 6, 4) AS INT) != CAST(SUBSTRING(@nam_hoc, 1, 4) AS INT) + 1
+    BEGIN
+        THROW 50009, N'Năm học không hợp lệ', 1;
+        RETURN;
+    END
+
+    -- Kiểm tra giảng viên đánh giá
+    IF NOT EXISTS (SELECT 1 FROM GiangVien WHERE ma_giang_vien = @ma_nguoi_danh_gia)
+    BEGIN
+        THROW 50010, N'Giảng viên đánh giá không tồn tại', 1;
+        RETURN;
+    END
+
+    -- Tính số vi phạm
+    DECLARE @so_vi_pham INT;
     SET @so_vi_pham = (
         SELECT COUNT(*)
         FROM ViPhamKyLuat vpkl
@@ -851,28 +939,69 @@ BEGIN
         AND YEAR(vpkl.ngay_vi_pham) = CAST(SUBSTRING(@nam_hoc, 1, 4) AS INT)
     );
 
-    -- Tính điểm cuối cùng và xếp loại
+    -- Tính điểm cuối cùng, đảm bảo không âm
     DECLARE @diem_cuoi_cung INT;
     SET @diem_cuoi_cung = COALESCE(@diem_thai_do, 80) - (@so_vi_pham * 5);
+    IF @diem_cuoi_cung < 0
+        SET @diem_cuoi_cung = 0;
 
-    -- Cập nhật điểm rèn luyện
-    UPDATE DiemRenLuyen
-    SET diem_cuoi_cung = @diem_cuoi_cung,
-        xep_loai = CASE 
-            WHEN @diem_cuoi_cung >= 90 THEN N'Xuất sắc'
-            WHEN @diem_cuoi_cung >= 80 THEN N'Tốt'
-            WHEN @diem_cuoi_cung >= 70 THEN N'Khá'
-            WHEN @diem_cuoi_cung >= 60 THEN N'Trung bình'
-            WHEN @diem_cuoi_cung >= 50 THEN N'Yếu'
-            ELSE N'Kém'
-        END
-    WHERE ma_sinh_vien = @ma_sinh_vien
-    AND hoc_ky = @hoc_ky
-    AND nam_hoc = @nam_hoc;
-END;
+    -- Tính xếp loại
+    DECLARE @xep_loai NVARCHAR(20);
+    SET @xep_loai = CASE 
+        WHEN @diem_cuoi_cung >= 90 THEN N'Xuất sắc'
+        WHEN @diem_cuoi_cung >= 80 THEN N'Tốt'
+        WHEN @diem_cuoi_cung >= 70 THEN N'Khá'
+        WHEN @diem_cuoi_cung >= 60 THEN N'Trung bình'
+        WHEN @diem_cuoi_cung >= 50 THEN N'Yếu'
+        ELSE N'Kém'
+    END;
+
+    -- Cập nhật hoặc chèn bản ghi
+    IF EXISTS (
+        SELECT 1 
+        FROM DiemRenLuyen 
+        WHERE ma_sinh_vien = @ma_sinh_vien 
+        AND hoc_ky = @hoc_ky 
+        AND nam_hoc = @nam_hoc
+    )
+    BEGIN
+        UPDATE DiemRenLuyen
+        SET diem_cuoi_cung = @diem_cuoi_cung,
+            xep_loai = @xep_loai,
+            ma_nguoi_danh_gia = @ma_nguoi_danh_gia,
+            ngay_danh_gia = GETDATE(),
+            ngay_cap_nhat = GETDATE()
+        WHERE ma_sinh_vien = @ma_sinh_vien
+        AND hoc_ky = @hoc_ky
+        AND nam_hoc = @nam_hoc;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO DiemRenLuyen (ma_sinh_vien, hoc_ky, nam_hoc, diem_cuoi_cung, xep_loai, ma_nguoi_danh_gia, ngay_danh_gia)
+        VALUES (
+            @ma_sinh_vien, 
+            @hoc_ky, 
+            @nam_hoc, 
+            @diem_cuoi_cung, 
+            @xep_loai, 
+            @ma_nguoi_danh_gia, 
+            GETDATE()
+        );
+    END
+
 GO
-
-
+-- Tạo chỉ mục
+CREATE NONCLUSTERED INDEX idx_ma_sinh_vien ON DangKyHocPhan(ma_sinh_vien);
+CREATE NONCLUSTERED INDEX idx_ma_lhp ON DangKyHocPhan(ma_lhp);
+CREATE NONCLUSTERED INDEX idx_ma_buoi ON DiemDanh(ma_buoi);
+CREATE NONCLUSTERED INDEX idx_ma_sinh_vien_trang_thai ON DiemDanh(ma_sinh_vien, trang_thai); -- Gộp idx_ma_sinh_vien_diem_danh
+CREATE NONCLUSTERED INDEX idx_ma_sinh_vien_lhp ON ThaiDoHocTap(ma_sinh_vien, ma_lhp); -- Thay idx_ma_lhp_thai_do_hoc_tap và idx_ma_sinh_vien_thai_do_hoc_tap
+CREATE NONCLUSTERED INDEX idx_ma_sinh_vien_vi_pham_ky_luat ON ViPhamKyLuat(ma_sinh_vien);
+CREATE NONCLUSTERED INDEX idx_ma_dang_ky_diem ON Diem(ma_dang_ky);
+CREATE NONCLUSTERED INDEX idx_ma_sinh_vien_diem_ren_luyen ON DiemRenLuyen(ma_sinh_vien);
+CREATE NONCLUSTERED INDEX idx_ma_lhp_tai_lieu_hoc_tap ON TaiLieuHocTap(ma_lhp);
+CREATE NONCLUSTERED INDEX idx_ma_sinh_vien_hoc_bong ON HocBong(ma_sinh_vien);
+GO
 
 -- Thêm dữ liệu cho bảng Khoa
 INSERT INTO Khoa (ma_khoa, ten_khoa, truong_khoa, mo_ta)
@@ -922,15 +1051,15 @@ VALUES
 GO
 
 -- Thêm dữ liệu cho bảng Sinh viên
-INSERT INTO SinhVien (ma_sinh_vien, ho_ten, ngay_sinh, gioi_tinh, email, ten_dang_nhap, mat_khau_bam, so_dien_thoai, dia_chi, cccd, thong_tin_phu_huynh, ma_lop, ma_nganh, nam_nhap_hoc, trang_thai)
+INSERT INTO SinhVien (ma_sinh_vien, ho_ten, ngay_sinh, gioi_tinh, email, ten_dang_nhap, mat_khau_bam, so_dien_thoai, dia_chi, cccd, thong_tin_phu_huynh, ma_lop, ma_nganh, ma_khoa, nam_nhap_hoc, trang_thai)
 VALUES 
-('SV001', N'Nguyễn Văn Hùng', '2003-05-10', N'Nam', 'SV001@st.utc2.edu.vn', 'nguyenvanhung', 'hashed_password_1', '0911111111', N'Hà Nội', '123456789012', N'Nguyễn Văn Ba', 'CNPM01', 'CNPM', 2023, N'Đang học'),
-('SV002', N'Trần Thị Mai', '2003-07-15', N'Nữ', 'SV002@st.utc2.edu.vn', 'tranthimai', 'hashed_password_2', '0922222222', N'Hà Nội', '123456789013', N'Trần Văn An', 'CNPM01', 'CNPM', 2023, N'Đang học'),
-('SV003', N'Lê Văn Nam', '2003-03-20', N'Nam', 'SV003@st.utc2.edu.vn', 'levannam', 'hashed_password_3', '0933333333', N'TP.HCM', '123456789014', N'Lê Thị Hoa', 'KTPM01', 'KTPM', 2023, N'Đang học'),
-('SV004', N'Phạm Thị Lan', '2003-09-25', N'Nữ', 'SV004@st.utc2.edu.vn', 'phamthilan', 'hashed_password_4', '0944444444', N'Đà Nẵng', '123456789015', N'Phạm Văn Tâm', 'XDDD01', 'XDDD', 2023, N'Đang học'),
-('SV005', N'Hoàng Văn Tùng', '2003-11-30', N'Nam', 'SV005@st.utc2.edu.vn', 'hoangvantung', 'hashed_password_5', '0955555555', N'Hà Nội', '123456789016', N'Hoàng Thị Mai', 'CNCK01', 'CNCK', 2023, N'Đang học'),
-('SV006', N'Ngô Thị Hoa', '2003-01-12', N'Nữ', 'SV006@st.utc2.edu.vn', 'ngothihoa', 'hashed_password_6', '0966666666', N'Hải Phòng', '123456789017', N'Ngô Văn Long', 'OTOKT01', 'OTOKT', 2023, N'Đang học'),
-('SV007', N'Vũ Văn Long', '2003-06-18', N'Nam', 'SV007@st.utc2.edu.vn', 'vuvanlong', 'hashed_password_7', '0977777777', N'Hà Nội', '123456789018', N'Vũ Thị Hương', 'QTKD01', 'QTKD', 2023, N'Đang học');
+('SV001', N'Nguyễn Văn Hùng', '2003-05-10', N'Nam', 'SV001@st.utc2.edu.vn', 'nguyenvanhung', 'hashed_password_1', '0911111111', N'Hà Nội', '123456789012', N'Nguyễn Văn Ba', 'CNPM01', 'CNPM', 'CNTT', 2023, N'Đang học'),
+('SV002', N'Trần Thị Mai', '2003-07-15', N'Nữ', 'SV002@st.utc2.edu.vn', 'tranthimai', 'hashed_password_2', '0922222222', N'Hà Nội', '123456789013', N'Trần Văn An', 'CNPM01', 'CNPM', 'CNTT', 2023, N'Đang học'),
+('SV003', N'Lê Văn Nam', '2003-03-20', N'Nam', 'SV003@st.utc2.edu.vn', 'levannam', 'hashed_password_3', '0933333333', N'TP.HCM', '123456789014', N'Lê Thị Hoa', 'KTPM01', 'KTPM', 'CNTT', 2023, N'Đang học'),
+('SV004', N'Phạm Thị Lan', '2003-09-25', N'Nữ', 'SV004@st.utc2.edu.vn', 'phamthilan', 'hashed_password_4', '0944444444', N'Đà Nẵng', '123456789015', N'Phạm Văn Tâm', 'XDDD01', 'XDDD', 'KTXD', 2023, N'Đang học'),
+('SV005', N'Hoàng Văn Tùng', '2003-11-30', N'Nam', 'SV005@st.utc2.edu.vn', 'hoangvantung', 'hashed_password_5', '0955555555', N'Hà Nội', '123456789016', N'Hoàng Thị Mai', 'CNCK01', 'CNCK', 'KTCK', 2023, N'Đang học'),
+('SV006', N'Ngô Thị Hoa', '2003-01-12', N'Nữ', 'SV006@st.utc2.edu.vn', 'ngothihoa', 'hashed_password_6', '0966666666', N'Hải Phòng', '123456789017', N'Ngô Văn Long', 'OTOKT01', 'OTOKT', 'KTOTO', 2023, N'Đang học'),
+('SV007', N'Vũ Văn Long', '2003-06-18', N'Nam', 'SV007@st.utc2.edu.vn', 'vuvanlong', 'hashed_password_7', '0977777777', N'Hà Nội', '123456789018', N'Vũ Thị Hương', 'QTKD01', 'QTKD', 'QTKD', 2023, N'Đang học');
 GO
 
 -- Thêm dữ liệu cho bảng Môn học
@@ -968,14 +1097,14 @@ VALUES
 GO
 
 -- Thêm dữ liệu cho bảng Buổi học
-INSERT INTO BuoiHoc (ma_lhp, ngay_hoc, gio_bat_dau, gio_ket_thuc, phong_hoc, chu_de, trang_thai)
+INSERT INTO BuoiHoc (ma_lhp, ngay_hoc, gio_bat_dau, gio_ket_thuc, phong_hoc, thu, tiet_bat_dau, tiet_ket_thuc, chu_de, trang_thai)
 VALUES 
-('TH01_2024_1', '2024-09-10', '07:00:00', '09:00:00', 'A101', N'Giới thiệu lập trình C++', N'Đã diễn ra'),
-('TH02_2024_1', '2024-09-10', '09:30:00', '11:30:00', 'A102', N'Mảng và con trỏ', N'Đã diễn ra'),
-('XD01_2024_1', '2024-09-10', '13:00:00', '15:00:00', 'B201', N'Cơ sở kỹ thuật xây dựng', N'Đã diễn ra'),
-('CK01_2024_1', '2024-09-10', '15:30:00', '17:30:00', 'C301', N'Cơ học chất rắn', N'Đã diễn ra'),
-('OT01_2024_1', '2024-09-10', '07:00:00', '09:00:00', 'D401', N'Hệ thống động cơ ô tô', N'Đã diễn ra'),
-('QT01_2024_1', '2024-09-10', '09:30:00', '11:30:00', 'E501', N'Khái niệm quản trị', N'Đã diễn ra');
+('TH01_2024_1', '2024-09-10', '07:00:00', '09:00:00', 'A101', N'Thứ 3', 1, 3, N'Giới thiệu lập trình C++', N'Đã diễn ra'),
+('TH02_2024_1', '2024-09-10', '09:30:00', '11:30:00', 'A102', N'Thứ 3', 4, 6, N'Mảng và con trỏ', N'Đã diễn ra'),
+('XD01_2024_1', '2024-09-10', '13:00:00', '15:00:00', 'B201', N'Thứ 3', 7, 9, N'Cơ sở kỹ thuật xây dựng', N'Đã diễn ra'),
+('CK01_2024_1', '2024-09-10', '15:30:00', '17:30:00', 'C301', N'Thứ 3', 10, 12, N'Cơ học chất rắn', N'Đã diễn ra'),
+('OT01_2024_1', '2024-09-10', '07:00:00', '09:00:00', 'D401', N'Thứ 3', 1, 3, N'Hệ thống động cơ ô tô', N'Đã diễn ra'),
+('QT01_2024_1', '2024-09-10', '09:30:00', '11:30:00', 'E501', N'Thứ 3', 4, 6, N'Khái niệm quản trị', N'Đã diễn ra');
 GO
 
 -- Thêm dữ liệu cho bảng Điểm danh
@@ -1033,13 +1162,52 @@ VALUES
 ('SV007', '1', '2024-2025', 80, 82, 81, 75, N'Khá', 'GV005', '2024-09-20');
 GO
 
--- Học bổng sẽ được tự động thêm bởi trigger trg_CapHocBong
--- Kiểm tra dữ liệu sau khi chạy trigger
-PRINT N'Đã tạo database và thêm dữ liệu mẫu thành công!';
+-- Thêm dữ liệu cho bảng Tỷ lệ điểm danh
+INSERT INTO TyLeDiemDanh (ma_sinh_vien, ma_lhp, ty_le_diem_danh)
+VALUES 
+('SV001', 'TH01_2024_1', 100.00),
+('SV002', 'TH01_2024_1', 100.00),
+('SV003', 'TH02_2024_1', 100.00),
+('SV004', 'XD01_2024_1', 100.00),
+('SV005', 'CK01_2024_1',100.00),
+('SV006', 'OT01_2024_1', 100.00),
+('SV007', 'QT01_2024_1', 100.00);
 GO
 
+-- Thêm dữ liệu cho bảng Tài liệu học tập
+INSERT INTO TaiLieuHocTap (ma_lhp, tieu_de, duong_dan, ma_nguoi_tai_len, mo_ta)
+VALUES 
+('TH01_2024_1', N'Tài liệu lập trình C++ cơ bản', '/tai_lieu/cpp_basic.pdf', 'GV001', N'Tài liệu giới thiệu lập trình C++'),
+('TH02_2024_1', N'Cấu trúc dữ liệu và giải thuật', '/tai_lieu/data_structure.pdf', 'GV006', N'Tài liệu về mảng và con trỏ'),
+('XD01_2024_1', N'Cơ sở kỹ thuật xây dựng', '/tai_lieu/xd_basic.pdf', 'GV002', N'Tài liệu cơ bản về kỹ thuật xây dựng'),
+('CK01_2024_1', N'Cơ học chất rắn', '/tai_lieu/co_hoc_chat_ran.pdf', 'GV003', N'Tài liệu cơ học chất rắn'),
+('OT01_2024_1', N'Hệ thống động cơ ô tô', '/tai_lieu/dong_co_oto.pdf', 'GV004', N'Tài liệu về hệ thống động cơ ô tô'),
+('QT01_2024_1', N'Quản trị kinh doanh cơ bản', '/tai_lieu/qt_basic.pdf', 'GV005', N'Tài liệu giới thiệu quản trị kinh doanh');
+GO
 
--- Scholarships sẽ được tự động thêm bởi trigger trg_Assign_Scholarship
--- Dữ liệu mẫu sẽ được kiểm tra sau khi chạy trigger
+-- Thêm dữ liệu cho bảng Học bổng
+INSERT INTO HocBong (ma_sinh_vien, hoc_ky, nam_hoc, loai_hoc_bong, gia_tri_hoc_bong, diem_ren_luyen, diem_trung_binh, ngay_cap, ghi_chu)
+VALUES 
+('SV001', '1', '2024-2025', N'Xuất sắc', 5000000, 90, 9.0, '2024-09-25', N'Học bổng Xuất sắc kỳ 1'),
+('SV002', '1', '2024-2025', N'Xuất sắc', 5000000, 95, 9.5, '2024-09-25', N'Học bổng Xuất sắc kỳ 1'),
+('SV005', '1', '2024-2025', N'Xuất sắc', 5000000, 90, 9.0, '2024-09-25', N'Học bổng Xuất sắc kỳ 1'),
+('SV006', '1', '2024-2025', N'Xuất sắc', 5000000, 95, 9.5, '2024-09-25', N'Học bổng Xuất sắc kỳ 1'),
+('SV004', '1', '2024-2025', N'Khá', 3000000, 85, 8.5, '2024-09-25', N'Học bổng Khá kỳ 1');
+GO
 
-PRINT N'Đã tạo database và thêm dữ liệu mẫu thành công!';
+-- Tạo View tối ưu hóa tỷ lệ điểm danh
+CREATE VIEW vw_TyLeDiemDanh AS
+SELECT 
+    sv.ma_sinh_vien,
+    sv.ho_ten,
+    lhp.ma_lhp,
+    mh.ten_mon_hoc,
+    tldd.ty_le_diem_danh,
+    lhp.hoc_ky,
+    lhp.nam_hoc
+FROM TyLeDiemDanh tldd
+JOIN SinhVien sv ON tldd.ma_sinh_vien = sv.ma_sinh_vien
+JOIN LopHocPhan lhp ON tldd.ma_lhp = lhp.ma_lhp
+JOIN MonHoc mh ON lhp.ma_mon_hoc = mh.ma_mon_hoc
+WHERE tldd.ty_le_diem_danh IS NOT NULL;
+GO
