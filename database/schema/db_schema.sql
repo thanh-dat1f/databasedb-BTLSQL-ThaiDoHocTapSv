@@ -12,8 +12,7 @@ GO
 
 -- Sau đó xóa cơ sở dữ liệu
 DROP DATABASE QuanLyThaiDoHocTap;
-GO
-drop database QuanLyThaiDoHocTap;
+
 -- Xóa các trigger nếu tồn tại
 DROP TRIGGER IF EXISTS trg_KiemTra_DangKy_ThaiDoHocTap;
 GO
@@ -49,6 +48,13 @@ DROP TABLE IF EXISTS GiangVien;
 DROP TABLE IF EXISTS NganhHoc;
 DROP TABLE IF EXISTS Khoa;
 
+-- Tạo cơ sở dữ liệu
+CREATE DATABASE QuanLyThaiDoHocTap;
+GO
+USE QuanLyThaiDoHocTap;
+GO
+
+-- Tạo bảng Khoa
 CREATE TABLE Khoa (
     maKhoa VARCHAR(10) PRIMARY KEY,
     tenKhoa NVARCHAR(100) NOT NULL,
@@ -58,7 +64,7 @@ CREATE TABLE Khoa (
 );
 GO
 
--- Bảng Ngành học
+-- Tạo bảng Ngành học
 CREATE TABLE NganhHoc (
     maNganh VARCHAR(10) PRIMARY KEY,
     tenNganh NVARCHAR(100) NOT NULL,
@@ -69,7 +75,7 @@ CREATE TABLE NganhHoc (
 );
 GO
 
--- Bảng Giảng viên
+-- Tạo bảng Giảng viên
 CREATE TABLE GiangVien (
     maGiangVien VARCHAR(10) PRIMARY KEY,
     hoTen NVARCHAR(100) NOT NULL,
@@ -83,7 +89,7 @@ CREATE TABLE GiangVien (
 );
 GO
 
--- Bảng Lớp học
+-- Tạo bảng Lớp học
 CREATE TABLE Lop (
     maLop VARCHAR(10) PRIMARY KEY,
     tenLop NVARCHAR(100) NOT NULL,
@@ -98,7 +104,7 @@ CREATE TABLE Lop (
 );
 GO
 
--- Bảng Sinh viên
+-- Tạo bảng Sinh viên
 CREATE TABLE SinhVien (
     maSinhVien VARCHAR(10) PRIMARY KEY,
     hoTen NVARCHAR(100) NOT NULL,
@@ -120,7 +126,7 @@ CREATE TABLE SinhVien (
 );
 GO
 
--- Bảng Môn học
+-- Tạo bảng Môn học
 CREATE TABLE MonHoc (
     maMonHoc VARCHAR(10) PRIMARY KEY,
     tenMonHoc NVARCHAR(100) NOT NULL,
@@ -132,7 +138,7 @@ CREATE TABLE MonHoc (
 );
 GO
 
--- Bảng Tiêu chí đánh giá thái độ học tập
+-- Tạo bảng Tiêu chí đánh giá thái độ học tập
 CREATE TABLE TieuChiDanhGia (
     maTieuChi VARCHAR(10) PRIMARY KEY,
     tenTieuChi NVARCHAR(100) NOT NULL,
@@ -144,7 +150,7 @@ CREATE TABLE TieuChiDanhGia (
 );
 GO
 
--- Bảng Lớp học phần
+-- Tạo bảng Lớp học phần
 CREATE TABLE LopHocPhan (
     maLHP VARCHAR(20) PRIMARY KEY,
     maMonHoc VARCHAR(10) NOT NULL,
@@ -165,7 +171,7 @@ CREATE TABLE LopHocPhan (
 );
 GO
 
--- Bảng Đăng ký học phần
+-- Tạo bảng Đăng ký học phần
 CREATE TABLE DangKyHocPhan (
     maDangKy INT IDENTITY(1,1) PRIMARY KEY,
     maSinhVien VARCHAR(10) NOT NULL,
@@ -183,7 +189,7 @@ CREATE TABLE DangKyHocPhan (
 );
 GO
 
--- Bảng Buổi học
+-- Tạo bảng Buổi học
 CREATE TABLE BuoiHoc (
     maBuoi INT IDENTITY(1,1) PRIMARY KEY,
     maLHP VARCHAR(20) NOT NULL,
@@ -199,7 +205,7 @@ CREATE TABLE BuoiHoc (
 );
 GO
 
--- Bảng Điểm danh
+-- Tạo bảng Điểm danh
 CREATE TABLE DiemDanh (
     maDiemDanh INT IDENTITY(1,1) PRIMARY KEY,
     maSinhVien VARCHAR(10) NOT NULL,
@@ -214,7 +220,7 @@ CREATE TABLE DiemDanh (
 );
 GO
 
--- Bảng Đánh giá thái độ học tập
+-- Tạo bảng Đánh giá thái độ học tập
 CREATE TABLE DanhGiaThaiDoHocTap (
     maDanhGia INT IDENTITY(1,1) PRIMARY KEY,
     maSinhVien VARCHAR(10) NOT NULL,
@@ -239,7 +245,7 @@ CREATE TABLE DanhGiaThaiDoHocTap (
 );
 GO
 
--- Bảng Vi phạm kỷ luật
+-- Tạo bảng Vi phạm kỷ luật
 CREATE TABLE ViPhamKyLuat (
     maViPham INT IDENTITY(1,1) PRIMARY KEY,
     maSinhVien VARCHAR(10) NOT NULL,
@@ -259,7 +265,7 @@ CREATE TABLE ViPhamKyLuat (
 );
 GO
 
--- Bảng Điểm rèn luyện tổng hợp học kỳ
+-- Tạo bảng Điểm rèn luyện tổng hợp học kỳ
 CREATE TABLE DiemRenLuyen (
     maDiemRenLuyen INT IDENTITY(1,1) PRIMARY KEY,
     maSinhVien VARCHAR(10) NOT NULL,
@@ -286,7 +292,7 @@ CREATE TABLE DiemRenLuyen (
 );
 GO
 
--- Bảng Chi tiết đánh giá theo tiêu chí
+-- Tạo bảng Chi tiết đánh giá theo tiêu chí
 CREATE TABLE ChiTietDanhGia (
     maChiTiet INT IDENTITY(1,1) PRIMARY KEY,
     maDanhGia INT NOT NULL,
@@ -675,7 +681,7 @@ BEGIN
 END;
 GO
 
--- Trigger cập nhật tỷ lệ tham gia từ điểm danh (Corrected)
+-- Trigger cập nhật tỷ lệ tham gia từ điểm danh
 CREATE TRIGGER trg_CapNhat_TyLeThamGia
 ON DiemDanh
 AFTER INSERT, UPDATE, DELETE
@@ -686,19 +692,16 @@ BEGIN
         maLHP VARCHAR(20)
     );
     
-    -- Insert from inserted records
     INSERT INTO @SinhVienLHPToUpdate
     SELECT DISTINCT i.maSinhVien, bh.maLHP
     FROM inserted i
     JOIN BuoiHoc bh ON i.maBuoi = bh.maBuoi;
     
-    -- Insert from deleted records
     INSERT INTO @SinhVienLHPToUpdate
     SELECT DISTINCT d.maSinhVien, bh.maLHP
     FROM deleted d
     JOIN BuoiHoc bh ON d.maBuoi = bh.maBuoi;
     
-    -- Update DanhGiaThaiDoHocTap with explicit table references
     UPDATE dght
     SET tyLeThamGia = (
             SELECT CASE 
@@ -720,7 +723,6 @@ BEGIN
         AND dght.maLHP = upd.maLHP;
 END;
 GO
-
 
 -- Trigger kiểm tra sinh viên đã đăng ký học phần trước khi điểm danh
 CREATE TRIGGER trg_KiemTra_DiemDanh_DangKy
@@ -833,8 +835,7 @@ BEGIN
 END;
 GO
 
-
--- Thêm dữ liệu vào bảng Khoa (Đại diện các khoa tại UTC2)
+-- Thêm dữ liệu vào bảng Khoa
 INSERT INTO Khoa (maKhoa, tenKhoa, truongKhoa, moTa) VALUES
 ('K01', N'Công trình', N'Nguyễn Văn Hùng', N'Khoa chuyên về kỹ thuật xây dựng và giao thông'),
 ('K02', N'Vận tải - Kinh tế', N'Trần Thị B', N'Khoa đào tạo kinh tế và quản lý vận tải'),
@@ -842,7 +843,7 @@ INSERT INTO Khoa (maKhoa, tenKhoa, truongKhoa, moTa) VALUES
 ('K04', N'Công nghệ Thông tin', N'Phạm Thị D', N'Khoa đào tạo công nghệ thông tin'),
 ('K05', N'Khoa học Cơ bản', N'Hoàng Văn E', N'Khoa đào tạo các môn cơ bản');
 
--- Thêm dữ liệu vào bảng NganhHoc (Dựa trên các ngành của UTC2)
+-- Thêm dữ liệu vào bảng NganhHoc
 INSERT INTO NganhHoc (maNganh, tenNganh, maKhoa, moTa) VALUES
 ('N01', N'Kỹ thuật xây dựng công trình giao thông', 'K01', N'Ngành đào tạo kỹ sư xây dựng giao thông'),
 ('N02', N'Quản trị kinh doanh', 'K02', N'Ngành đào tạo quản trị doanh nghiệp'),
@@ -855,7 +856,7 @@ INSERT INTO NganhHoc (maNganh, tenNganh, maKhoa, moTa) VALUES
 ('N09', N'Kỹ thuật cơ điện tử', 'K03', N'Ngành đào tạo kỹ sư cơ điện tử'),
 ('N10', N'Khai thác vận tải', 'K02', N'Ngành đào tạo quản lý vận tải');
 
--- Thêm dữ liệu vào bảng GiangVien (Thêm 20 giảng viên)
+-- Thêm dữ liệu vào bảng GiangVien
 INSERT INTO GiangVien (maGiangVien, hoTen, gioiTinh, email, soDienThoai, maKhoa, chucVu) VALUES
 ('GV01', N'Nguyễn Văn Hùng', N'Nam', 'hungnv@utc2.edu.vn', '0912345678', 'K01', N'Phó Giám đốc Phân hiệu'),
 ('GV02', N'Trần Thị Mai', N'Nữ', 'mai.tt@utc2.edu.vn', '0987654321', 'K02', N'Phó khoa'),
@@ -878,7 +879,7 @@ INSERT INTO GiangVien (maGiangVien, hoTen, gioiTinh, email, soDienThoai, maKhoa,
 ('GV19', N'Trần Thị Hồng', N'Nữ', 'hongtt@utc2.edu.vn', '0926789012', 'K04', N'Giảng viên'),
 ('GV20', N'Lê Văn Sơn', N'Nam', 'sonlv@utc2.edu.vn', '0951234567', 'K05', N'Giảng viên');
 
--- Thêm dữ liệu vào bảng Lop (Thêm 10 lớp)
+-- Thêm dữ liệu vào bảng Lop
 INSERT INTO Lop (maLop, tenLop, maKhoa, maNganh, maGVCN, namBatDau) VALUES
 ('L01', N'KXDG01', 'K01', 'N01', 'GV01', 2023),
 ('L02', N'QTKD01', 'K02', 'N02', 'GV02', 2023),
@@ -891,18 +892,14 @@ INSERT INTO Lop (maLop, tenLop, maKhoa, maNganh, maGVCN, namBatDau) VALUES
 ('L09', N'KCDT01', 'K03', 'N09', 'GV13', 2024),
 ('L10', N'KHVT01', 'K02', 'N10', 'GV17', 2024);
 
--- Thêm dữ liệu vào bảng SinhVien (Thêm 50 sinh viên, phân bổ đều cho các lớp)
+-- Thêm dữ liệu vào bảng SinhVien
 INSERT INTO SinhVien (maSinhVien, hoTen, ngaySinh, gioiTinh, email, soDienThoai, diaChi, CCCD, maLop, maNganh, maKhoa, namNhapHoc, trangThai) VALUES
 ('SV001', N'Nguyễn Văn Nam', '2003-05-10', N'Nam', 'namnv001@utc2.edu.vn', '0912345679', N'TP.HCM', '123456789001', 'L01', 'N01', 'K01', 2023, N'Đang học'),
 ('SV002', N'Lê Thị Hồng', '2003-07-15', N'Nữ', 'honglt002@utc2.edu.vn', '0987654322', N'Bình Dương', '987654321002', 'L01', 'N01', 'K01', 2023, N'Đang học'),
 ('SV003', N'Trần Văn Hùng', '2002-03-22', N'Nam', 'hungtv003@utc2.edu.vn', '0901234568', N'Đồng Nai', '123456789003', 'L01', 'N01', 'K01', 2023, N'Đang học'),
-('SV004', N'Phạm Thị Mai', '2003-11-30', N'Nữ', 'maipt004@utc2.edu.vn', '0978123457', N'TP.HCM', '987654321004', 'L01', 'N01', 'K01', 2023, N'Đang học'),
-('SV005', N'Hoàng Văn Tâm', '2002-09-05', N'Nam', 'tamhv005@utc2.edu.vn', '0932123457', N'Long An', '123456789005', 'L01', 'N01', 'K01', 2023, N'Đang học'),
 ('SV006', N'Nguyễn Thị Lan', '2003-01-12', N'Nữ', 'lannt006@utc2.edu.vn', '0918765433', N'TP.HCM', '987654321006', 'L02', 'N02', 'K02', 2023, N'Đang học'),
 ('SV007', N'Vũ Văn Long', '2002-06-18', N'Nam', 'longvv007@utc2.edu.vn', '0981234568', N'Bình Phước', '123456789007', 'L02', 'N02', 'K02', 2023, N'Đang học'),
 ('SV008', N'Trần Thị Hoa', '2003-04-25', N'Nữ', 'hoatt008@utc2.edu.vn', '0967891235', N'TP.HCM', '987654321008', 'L02', 'N02', 'K02', 2023, N'Đang học'),
-('SV009', N'Lê Văn Khánh', '2002-08-14', N'Nam', 'khanhlv009@utc2.edu.vn', '0945678902', N'Đồng Nai', '123456789009', 'L02', 'N02', 'K02', 2023, N'Đang học'),
-('SV010', N'Phạm Thị Minh', '2003-02-28', N'Nữ', 'minhpt010@utc2.edu.vn', '0923456790', N'TP.HCM', '987654321010', 'L02', 'N02', 'K02', 2023, N'Đang học'),
 ('SV011', N'Nguyễn Văn Bình', '2003-10-03', N'Nam', 'binhnv011@utc2.edu.vn', '0919876544', 'Tiền Giang', '123456789011', 'L03', 'N03', 'K04', 2023, N'Đang học'),
 ('SV012', N'Trần Thị Ngọc', '2002-12-19', N'Nữ', 'ngoctt012@utc2.edu.vn', '0984561238', N'TP.HCM', '987654321012', 'L03', 'N03', 'K04', 2023, N'Đang học'),
 ('SV013', N'Lê Văn Đức', '2003-05-07', N'Nam', 'duclv013@utc2.edu.vn', '0936789013', 'Bình Dương', '123456789013', 'L03', 'N03', 'K04', 2023, N'Đang học'),
@@ -942,9 +939,15 @@ INSERT INTO SinhVien (maSinhVien, hoTen, ngaySinh, gioiTinh, email, soDienThoai,
 ('SV047', N'Trần Thị Hoa', '2004-06-24', N'Nữ', 'hoatt047@utc2.edu.vn', '0981234570', 'Bình Dương', '987654321047', 'L10', 'N10', 'K02', 2024, N'Đang học'),
 ('SV048', N'Lê Văn Khánh', '2004-10-30', N'Nam', 'khanhlv048@utc2.edu.vn', '0967891237', 'TP.HCM', '123456789048', 'L10', 'N10', 'K02', 2024, N'Đang học'),
 ('SV049', N'Phạm Thị Minh', '2004-04-06', N'Nữ', 'minhpt049@utc2.edu.vn', '0945678904', 'Đồng Nai', '987654321049', 'L10', 'N10', 'K02', 2024, N'Đang học'),
-('SV050', N'Hoàng Văn Đức', '2004-08-12', N'Nam', 'duchv050@utc2.edu.vn', '0923456792', 'TP.HCM', '123456789050', 'L10', 'N10', 'K02', 2024, N'Đang học');
+('SV050', N'Hoàng Văn Đức', '2004-08-12', N'Nam', 'duchv050@utc2.edu.vn', '0923456792', 'TP.HCM', '123456789050', 'L10', 'N10', 'K02', 2024, N'Đang học'),
+-- Bổ sung sinh viên với các trạng thái khác nhau
+('SV051', N'Nguyễn Văn An', '2003-05-10', N'Nam', 'annv051@utc2.edu.vn', '0912345681', 'TP.HCM', '123456789051', 'L01', 'N01', 'K01', 2023, N'Bảo lưu'),
+('SV052', N'Trần Thị Bình', '2003-07-15', N'Nữ', 'binhtt052@utc2.edu.vn', '0987654325', 'Bình Dương', '987654321052', 'L02', 'N02', 'K02', 2023, N'Thôi học'),
+('SV053', N'Lê Văn Cường', '2002-03-22', N'Nam', 'cuonglv053@utc2.edu.vn', '0901234571', 'Đồng Nai', '123456789053', 'L03', 'N03', 'K04', 2023, N'Tốt nghiệp'),
+('SV054', N'Phạm Thị Duyên', '2003-11-30', N'Nữ', 'duyenpt054@utc2.edu.vn', '0978123460', 'TP.HCM', '987654321054', 'L04', 'N04', 'K03', 2024, N'Đang học'),
+('SV055', N'Hoàng Văn Em', '2002-09-05', N'Nam', 'emhv055@utc2.edu.vn', '0932123460', 'Long An', '123456789055', 'L05', 'N05', 'K02', 2023, N'Đang học');
 
--- Thêm dữ liệu vào bảng MonHoc (Thêm 15 môn học)
+-- Thêm dữ liệu vào bảng MonHoc
 INSERT INTO MonHoc (maMonHoc, tenMonHoc, soTinChi, maKhoa, moTa) VALUES
 ('MH01', N'Kỹ thuật xây dựng', 3, 'K01', N'Môn học về kỹ thuật xây dựng công trình giao thông'),
 ('MH02', N'Quản trị marketing', 3, 'K02', N'Môn học về chiến lược marketing'),
@@ -962,7 +965,7 @@ INSERT INTO MonHoc (maMonHoc, tenMonHoc, soTinChi, maKhoa, moTa) VALUES
 ('MH14', N'Sức bền vật liệu', 3, 'K01', N'Môn học về cơ học vật liệu'),
 ('MH15', N'Triết học', 2, 'K05', N'Môn học về triết học cơ bản');
 
--- Thêm dữ liệu vào bảng TieuChiDanhGia (Thêm 8 tiêu chí)
+-- Thêm dữ liệu vào bảng TieuChiDanhGia
 INSERT INTO TieuChiDanhGia (maTieuChi, tenTieuChi, loaiTieuChi, moTa, diemToiDa, trongSo) VALUES
 ('TC01', N'Tỷ lệ tham gia', N'Tham gia', N'Đánh giá mức độ tham gia buổi học', 100, 0.20),
 ('TC02', N'Mức độ tập trung', N'Tập trung', N'Đánh giá sự tập trung trong giờ học', 100, 0.20),
@@ -973,105 +976,112 @@ INSERT INTO TieuChiDanhGia (maTieuChi, tenTieuChi, loaiTieuChi, moTa, diemToiDa,
 ('TC07', N'Tôn trọng', N'Tôn trọng', N'Đánh giá thái độ tôn trọng', 100, 0.05),
 ('TC08', N'Kỷ luật', N'Kỷ luật', N'Đánh giá tuân thủ kỷ luật', 100, 0.05);
 
--- Thêm dữ liệu vào bảng LopHocPhan (Thêm 20 lớp học phần)
+-- Thêm dữ liệu vào bảng LopHocPhan
 INSERT INTO LopHocPhan (maLHP, maMonHoc, maGiangVien, hocKy, namHoc, siSoToiDa, soSinhVienHienTai, ngayBatDau, ngayKetThuc) VALUES
-('LHP01', 'MH01', 'GV01', '1', '2023-2024', 60, 10, '2023-09-01', '2023-12-15'),
-('LHP02', 'MH02', 'GV02', '1', '2023-2024', 60, 10, '2023-09-01', '2023-12-15'),
-('LHP03', 'MH03', 'GV04', '1', '2023-2024', 60, 10, '2023-09-01', '2023-12-15'),
-('LHP04', 'MH04', 'GV03', '1', '2023-2024', 60, 10, '2023-09-01', '2023-12-15'),
-('LHP05', 'MH05', 'GV07', '1', '2023-2024', 60, 10, '2023-09-01', '2023-12-15'),
-('LHP06', 'MH06', 'GV08', '2', '2023-2024', 60, 10, '2024-02-01', '2024-05-15'),
-('LHP07', 'MH07', 'GV12', '2', '2023-2024', 60, 10, '2024-02-01', '2024-05-15'),
-('LHP08', 'MH08', 'GV11', '2', '2023-2024', 60, 10, '2024-02-01', '2024-05-15'),
-('LHP09', 'MH09', 'GV13', '2', '2023-2024', 60, 10, '2024-02-01', '2024-05-15'),
-('LHP10', 'MH10', 'GV17', '2', '2023-2024', 60, 10, '2024-02-01', '2024-05-15'),
-('LHP11', 'MH11', 'GV05', '1', '2024-2025', 60, 10, '2024-09-01', '2024-12-15'),
-('LHP12', 'MH12', 'GV15', '1', '2024-2025', 60, 10, '2024-09-01', '2024-12-15'),
-('LHP13', 'MH13', 'GV14', '1', '2024-2025', 60, 10, '2024-09-01', '2024-12-15'),
-('LHP14', 'MH14', 'GV16', '1', '2024-2025', 60, 10, '2024-09-01', '2024-12-15'),
-('LHP15', 'MH15', 'GV20', '1', '2024-2025', 60, 10, '2024-09-01', '2024-12-15'),
-('LHP16', 'MH01', 'GV01', '2', '2024-2025', 60, 10, '2025-02-01', '2025-05-15'),
-('LHP17', 'MH02', 'GV02', '2', '2024-2025', 60, 10, '2025-02-01', '2025-05-15'),
-('LHP18', 'MH03', 'GV04', '2', '2024-2025', 60, 10, '2025-02-01', '2025-05-15'),
-('LHP19', 'MH04', 'GV03', '2', '2024-2025', 60, 10, '2025-02-01', '2025-05-15'),
-('LHP20', 'MH05', 'GV07', '2', '2024-2025', 60, 10, '2025-02-01', '2025-05-15');
+('LHP01', 'MH01', 'GV01', '1', '2023-2024', 60, 5, '2023-09-01', '2023-12-15'),
+('LHP02', 'MH02', 'GV02', '1', '2023-2024', 60, 5, '2023-09-01', '2023-12-15'),
+('LHP03', 'MH03', 'GV04', '1', '2023-2024', 60, 5, '2023-09-01', '2023-12-15'),
+('LHP04', 'MH04', 'GV03', '1', '2023-2024', 60, 5, '2023-09-01', '2023-12-15'),
+('LHP05', 'MH05', 'GV07', '1', '2023-2024', 60, 5, '2023-09-01', '2023-12-15'),
+('LHP06', 'MH06', 'GV08', '2', '2023-2024', 60, 5, '2024-02-01', '2024-05-15'),
+('LHP07', 'MH07', 'GV12', '2', '2023-2024', 60, 5, '2024-02-01', '2024-05-15'),
+('LHP08', 'MH08', 'GV11', '2', '2023-2024', 60, 5, '2024-02-01', '2024-05-15'),
+('LHP09', 'MH09', 'GV13', '2', '2023-2024', 60, 5, '2024-02-01', '2024-05-15'),
+('LHP10', 'MH10', 'GV17', '2', '2023-2024', 60, 5, '2024-02-01', '2024-05-15'),
+('LHP11', 'MH11', 'GV05', '1', '2024-2025', 60, 5, '2024-09-01', '2024-12-15'),
+('LHP12', 'MH12', 'GV15', '1', '2024-2025', 60, 5, '2024-09-01', '2024-12-15'),
+('LHP13', 'MH13', 'GV14', '1', '2024-2025', 60, 5, '2024-09-01', '2024-12-15'),
+('LHP14', 'MH14', 'GV16', '1', '2024-2025', 60, 5, '2024-09-01', '2024-12-15'),
+('LHP15', 'MH15', 'GV20', '1', '2024-2025', 60, 5, '2024-09-01', '2024-12-15'),
+('LHP16', 'MH01', 'GV01', '2', '2024-2025', 60, 5, '2025-02-01', '2025-05-15'),
+('LHP17', 'MH02', 'GV02', '2', '2024-2025', 60, 5, '2025-02-01', '2025-05-15'),
+('LHP18', 'MH03', 'GV04', '2', '2024-2025', 60, 5, '2025-02-01', '2025-05-15'),
+('LHP19', 'MH04', 'GV03', '2', '2024-2025', 60, 5, '2025-02-01', '2025-05-15'),
+('LHP20', 'MH05', 'GV07', '2', '2024-2025', 60, 5, '2025-02-01', '2025-05-15'),
+-- Bổ sung thêm lớp học phần để bao quát các học kỳ
+('LHP21', 'MH11', 'GV05', '1', '2023-2024', 60, 5, '2023-09-01', '2023-12-15'),
+('LHP22', 'MH12', 'GV15', '2', '2023-2024', 60, 5, '2024-02-01', '2024-05-15');
 
 -- Thêm dữ liệu vào bảng DangKyHocPhan
 INSERT INTO DangKyHocPhan (maSinhVien, maLHP, ngayDangKy, trangThai, diemGiuaKy, diemCuoiKy, diemThucHanh, diemTong) VALUES
--- 50 bản ghi trạng thái Hoàn thành (phân bổ đều cho các sinh viên và học phần)
-('SV001', 'LHP01', '2023-08-20', N'Hoàn thành', 8.0, 8.5, 7.5, 8.2), -- Kỹ thuật xây dựng
+-- Trạng thái Hoàn thành (bao gồm điểm thấp để kiểm tra truy vấn 10)
+('SV001', 'LHP01', '2023-08-20', N'Hoàn thành', 5.0, 4.5, 5.5, 5.0), -- Điểm thấp
 ('SV002', 'LHP01', '2023-08-20', N'Hoàn thành', 7.5, 7.0, 8.0, 7.5),
 ('SV003', 'LHP01', '2023-08-20', N'Hoàn thành', 8.5, 8.0, 7.0, 7.8),
 ('SV004', 'LHP01', '2023-08-20', N'Hoàn thành', 7.0, 7.5, 8.5, 7.7),
 ('SV005', 'LHP01', '2023-08-20', N'Hoàn thành', 8.0, 8.0, 7.5, 7.9),
-('SV006', 'LHP02', '2023-08-20', N'Hoàn thành', 8.5, 8.0, 8.0, 8.2), -- Quản trị marketing
+('SV006', 'LHP02', '2023-08-20', N'Hoàn thành', 4.5, 5.0, 4.0, 4.5), -- Điểm thấp
 ('SV007', 'LHP02', '2023-08-20', N'Hoàn thành', 7.5, 7.5, 7.5, 7.5),
 ('SV008', 'LHP02', '2023-08-20', N'Hoàn thành', 8.0, 8.0, 8.0, 8.0),
 ('SV009', 'LHP02', '2023-08-20', N'Hoàn thành', 7.0, 7.0, 7.5, 7.2),
 ('SV010', 'LHP02', '2023-08-20', N'Hoàn thành', 8.5, 8.5, 8.0, 8.3),
-('SV011', 'LHP03', '2023-08-20', N'Hoàn thành', 8.0, 8.0, 7.5, 7.9), -- Lập trình Java
+('SV011', 'LHP03', '2023-08-20', N'Hoàn thành', 5.5, 5.0, 4.5, 5.0), -- Điểm thấp
 ('SV012', 'LHP03', '2023-08-20', N'Hoàn thành', 7.5, 7.5, 8.0, 7.7),
 ('SV013', 'LHP03', '2023-08-20', N'Hoàn thành', 8.5, 8.0, 7.0, 7.8),
 ('SV014', 'LHP03', '2023-08-20', N'Hoàn thành', 7.0, 7.5, 8.5, 7.7),
 ('SV015', 'LHP03', '2023-08-20', N'Hoàn thành', 8.0, 8.0, 7.5, 7.9),
-('SV016', 'LHP04', '2023-08-20', N'Hoàn thành', 8.0, 8.5, 7.5, 8.2), -- Công nghệ ô tô
+('SV016', 'LHP04', '2023-08-20', N'Hoàn thành', 8.0, 8.5, 7.5, 8.2),
 ('SV017', 'LHP04', '2023-08-20', N'Hoàn thành', 7.5, 7.0, 8.0, 7.5),
 ('SV018', 'LHP04', '2023-08-20', N'Hoàn thành', 8.5, 8.0, 7.0, 7.8),
 ('SV019', 'LHP04', '2023-08-20', N'Hoàn thành', 7.0, 7.5, 8.5, 7.7),
 ('SV020', 'LHP04', '2023-08-20', N'Hoàn thành', 8.0, 8.0, 7.5, 7.9),
-('SV021', 'LHP05', '2023-08-20', N'Hoàn thành', 8.5, 8.0, 8.0, 8.2), -- Quản lý chuỗi cung ứng
+('SV021', 'LHP05', '2023-08-20', N'Hoàn thành', 8.5, 8.0, 8.0, 8.2),
 ('SV022', 'LHP05', '2023-08-20', N'Hoàn thành', 7.5, 7.5, 7.5, 7.5),
 ('SV023', 'LHP05', '2023-08-20', N'Hoàn thành', 8.0, 8.0, 8.0, 8.0),
 ('SV024', 'LHP05', '2023-08-20', N'Hoàn thành', 7.0, 7.0, 7.5, 7.2),
 ('SV025', 'LHP05', '2023-08-20', N'Hoàn thành', 8.5, 8.5, 8.0, 8.3),
-('SV026', 'LHP06', '2023-08-20', N'Hoàn thành', 8.0, 8.0, 7.5, 7.9), -- Điện tử viễn thông
+('SV026', 'LHP06', '2023-08-20', N'Hoàn thành', 8.0, 8.0, 7.5, 7.9),
 ('SV027', 'LHP06', '2023-08-20', N'Hoàn thành', 7.5, 7.5, 8.0, 7.7),
 ('SV028', 'LHP06', '2023-08-20', N'Hoàn thành', 8.5, 8.0, 7.0, 7.8),
 ('SV029', 'LHP06', '2023-08-20', N'Hoàn thành', 7.0, 7.5, 8.5, 7.7),
 ('SV030', 'LHP06', '2023-08-20', N'Hoàn thành', 8.0, 8.0, 7.5, 7.9),
-('SV031', 'LHP07', '2023-08-20', N'Hoàn thành', 8.5, 8.0, 8.0, 8.2), -- Kế toán tài chính
+('SV031', 'LHP07', '2023-08-20', N'Hoàn thành', 8.5, 8.0, 8.0, 8.2),
 ('SV032', 'LHP07', '2023-08-20', N'Hoàn thành', 7.5, 7.5, 7.5, 7.5),
 ('SV033', 'LHP07', '2023-08-20', N'Hoàn thành', 8.0, 8.0, 8.0, 8.0),
 ('SV034', 'LHP07', '2023-08-20', N'Hoàn thành', 7.0, 7.0, 7.5, 7.2),
 ('SV035', 'LHP07', '2023-08-20', N'Hoàn thành', 8.5, 8.5, 8.0, 8.3),
-('SV036', 'LHP08', '2023-08-20', N'Hoàn thành', 8.0, 8.0, 7.5, 7.9), -- Kinh tế xây dựng
+('SV036', 'LHP08', '2023-08-20', N'Hoàn thành', 8.0, 8.0, 7.5, 7.9),
 ('SV037', 'LHP08', '2023-08-20', N'Hoàn thành', 7.5, 7.5, 8.0, 7.7),
 ('SV038', 'LHP08', '2023-08-20', N'Hoàn thành', 8.5, 8.0, 7.0, 7.8),
 ('SV039', 'LHP08', '2023-08-20', N'Hoàn thành', 7.0, 7.5, 8.5, 7.7),
 ('SV040', 'LHP08', '2023-08-20', N'Hoàn thành', 8.0, 8.0, 7.5, 7.9),
-('SV041', 'LHP09', '2023-08-20', N'Hoàn thành', 8.5, 8.0, 8.0, 8.2), -- Cơ điện tử
+('SV041', 'LHP09', '2023-08-20', N'Hoàn thành', 8.5, 8.0, 8.0, 8.2),
 ('SV042', 'LHP09', '2023-08-20', N'Hoàn thành', 7.5, 7.5, 7.5, 7.5),
 ('SV043', 'LHP09', '2023-08-20', N'Hoàn thành', 8.0, 8.0, 8.0, 8.0),
 ('SV044', 'LHP09', '2023-08-20', N'Hoàn thành', 7.0, 7.0, 7.5, 7.2),
 ('SV045', 'LHP09', '2023-08-20', N'Hoàn thành', 8.5, 8.5, 8.0, 8.3),
-('SV046', 'LHP10', '2023-08-20', N'Hoàn thành', 8.0, 8.0, 7.5, 7.9), -- Quản lý vận tải
+('SV046', 'LHP10', '2023-08-20', N'Hoàn thành', 8.0, 8.0, 7.5, 7.9),
 ('SV047', 'LHP10', '2023-08-20', N'Hoàn thành', 7.5, 7.5, 8.0, 7.7),
 ('SV048', 'LHP10', '2023-08-20', N'Hoàn thành', 8.5, 8.0, 7.0, 7.8),
 ('SV049', 'LHP10', '2023-08-20', N'Hoàn thành', 7.0, 7.5, 8.5, 7.7),
 ('SV050', 'LHP10', '2023-08-20', N'Hoàn thành', 8.0, 8.0, 7.5, 7.9),
-
--- 50 bản ghi trạng thái Đang học (phân bổ đều cho các sinh viên và học phần)
-('SV001', 'LHP11', '2024-08-20', N'Đang học', 8.0, NULL, 7.5, NULL), -- Toán cao cấp
-('SV002', 'LHP14', '2024-08-20', N'Đang học', 7.5, NULL, 8.0, NULL), -- Sức bền vật liệu
-('SV003', 'LHP08', '2024-08-20', N'Đang học', 8.5, NULL, 7.0, NULL), -- Kinh tế xây dựng
+('SV001', 'LHP21', '2023-08-20', N'Hoàn thành', 6.0, 6.5, 7.0, 6.5),
+('SV002', 'LHP21', '2023-08-20', N'Hoàn thành', 8.0, 8.5, 8.0, 8.2),
+('SV003', 'LHP21', '2023-08-20', N'Hoàn thành', 7.0, 7.5, 7.0, 7.2),
+('SV004', 'LHP21', '2023-08-20', N'Hoàn thành', 9.0, 9.5, 9.0, 9.2),
+('SV005', 'LHP21', '2023-08-20', N'Hoàn thành', 8.5, 8.0, 8.5, 8.3),
+-- Trạng thái Đang học
+('SV001', 'LHP11', '2024-08-20', N'Đang học', 8.0, NULL, 7.5, NULL),
+('SV002', 'LHP14', '2024-08-20', N'Đang học', 7.5, NULL, 8.0, NULL),
+('SV003', 'LHP16', '2024-08-20', N'Đang học', 8.5, NULL, 7.0, NULL),
 ('SV004', 'LHP14', '2024-08-20', N'Đang học', 7.0, NULL, 8.5, NULL),
 ('SV005', 'LHP11', '2024-08-20', N'Đang học', 8.0, NULL, 7.5, NULL),
-('SV006', 'LHP12', '2024-08-20', N'Đang học', 8.5, NULL, 8.0, NULL), -- Vật lý kỹ thuật
-('SV007', 'LHP15', '2024-08-20', N'Đang học', 7.5, NULL, 7.5, NULL), -- Triết học
-('SV008', 'LHP07', '2024-08-20', N'Đang học', 8.0, NULL, 8.0, NULL), -- Kế toán tài chính
+('SV006', 'LHP12', '2024-08-20', N'Đang học', 8.5, NULL, 8.0, NULL),
+('SV007', 'LHP15', '2024-08-20', N'Đang học', 7.5, NULL, 7.5, NULL),
+('SV008', 'LHP17', '2024-08-20', N'Đang học', 8.0, NULL, 8.0, NULL),
 ('SV009', 'LHP12', '2024-08-20', N'Đang học', 7.0, NULL, 7.5, NULL),
 ('SV010', 'LHP15', '2024-08-20', N'Đang học', 8.5, NULL, 8.0, NULL),
-('SV011', 'LHP13', '2024-08-20', N'Đang học', 8.0, NULL, 7.5, NULL), -- Tin học cơ bản
-('SV012', 'LHP11', '2024-08-20', N'Đang học', 7.5, NULL, 8.0, NULL),
+('SV011', 'LHP13', '2024-08-20', N'Đang học', 8.0, NULL, 7.5, NULL),
+('SV012', 'LHP18', '2024-08-20', N'Đang học', 7.5, NULL, 8.0, NULL),
 ('SV013', 'LHP13', '2024-08-20', N'Đang học', 8.5, NULL, 7.0, NULL),
 ('SV014', 'LHP11', '2024-08-20', N'Đang học', 7.0, NULL, 8.5, NULL),
 ('SV015', 'LHP13', '2024-08-20', N'Đang học', 8.0, NULL, 7.5, NULL),
-('SV016', 'LHP14', '2024-08-20', N'Đang học', 8.0, NULL, 7.5, NULL),
+('SV016', 'LHP19', '2024-08-20', N'Đang học', 8.0, NULL, 7.5, NULL),
 ('SV017', 'LHP12', '2024-08-20', N'Đang học', 7.5, NULL, 8.0, NULL),
 ('SV018', 'LHP14', '2024-08-20', N'Đang học', 8.5, NULL, 7.0, NULL),
 ('SV019', 'LHP12', '2024-08-20', N'Đang học', 7.0, NULL, 8.5, NULL),
 ('SV020', 'LHP14', '2024-08-20', N'Đang học', 8.0, NULL, 7.5, NULL),
-('SV021', 'LHP15', '2024-08-20', N'Đang học', 8.5, NULL, 8.0, NULL),
+('SV021', 'LHP20', '2024-08-20', N'Đang học', 8.5, NULL, 8.0, NULL),
 ('SV022', 'LHP12', '2024-08-20', N'Đang học', 7.5, NULL, 7.5, NULL),
 ('SV023', 'LHP15', '2024-08-20', N'Đang học', 8.0, NULL, 8.0, NULL),
 ('SV024', 'LHP12', '2024-08-20', N'Đang học', 7.0, NULL, 7.5, NULL),
@@ -1101,60 +1111,59 @@ INSERT INTO DangKyHocPhan (maSinhVien, maLHP, ngayDangKy, trangThai, diemGiuaKy,
 ('SV048', 'LHP15', '2024-08-20', N'Đang học', 8.5, NULL, 7.0, NULL),
 ('SV049', 'LHP12', '2024-08-20', N'Đang học', 7.0, NULL, 8.5, NULL),
 ('SV050', 'LHP15', '2024-08-20', N'Đang học', 8.0, NULL, 7.5, NULL),
-
--- 50 bản ghi trạng thái Đã hủy (phân bổ đều cho các sinh viên và học phần)
-('SV001', 'LHP14', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL), -- Sức bền vật liệu
-('SV002', 'LHP11', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL), -- Toán cao cấp
-('SV003', 'LHP14', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV004', 'LHP11', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV005', 'LHP08', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL), -- Kinh tế xây dựng
-('SV006', 'LHP15', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL), -- Triết học
-('SV007', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL), -- Vật lý kỹ thuật
-('SV008', 'LHP15', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV009', 'LHP07', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL), -- Kế toán tài chính
-('SV010', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV011', 'LHP11', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV012', 'LHP13', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL), -- Tin học cơ bản
+-- Trạng thái Đã hủy
+('SV001', 'LHP14', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV002', 'LHP11', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV003', 'LHP17', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV004', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV005', 'LHP08', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV006', 'LHP15', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV007', 'LHP13', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV008', 'LHP18', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV009', 'LHP07', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV010', 'LHP14', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV011', 'LHP16', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV012', 'LHP15', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
 ('SV013', 'LHP11', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV014', 'LHP13', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV015', 'LHP11', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV016', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV014', 'LHP19', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV015', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV016', 'LHP20', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
 ('SV017', 'LHP14', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV018', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV019', 'LHP14', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV020', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV018', 'LHP13', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV019', 'LHP15', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV020', 'LHP11', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
 ('SV021', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV022', 'LHP15', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV023', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV024', 'LHP15', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV025', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV026', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV027', 'LHP14', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV028', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV022', 'LHP16', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV023', 'LHP14', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV024', 'LHP17', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV025', 'LHP13', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV026', 'LHP15', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV027', 'LHP18', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV028', 'LHP11', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
 ('SV029', 'LHP14', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV030', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV030', 'LHP19', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
 ('SV031', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV032', 'LHP15', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV033', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV032', 'LHP20', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV033', 'LHP13', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
 ('SV034', 'LHP15', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV035', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV036', 'LHP11', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV037', 'LHP14', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV038', 'LHP11', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV039', 'LHP14', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV040', 'LHP11', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV035', 'LHP14', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV036', 'LHP16', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV037', 'LHP11', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV038', 'LHP17', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV039', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV040', 'LHP15', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
 ('SV041', 'LHP14', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV042', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV043', 'LHP14', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV044', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV045', 'LHP14', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV046', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV047', 'LHP15', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV048', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV049', 'LHP15', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
-('SV050', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL);
-GO
--- Thêm dữ liệu vào bảng BuoiHoc (Thêm 40 buổi học cho các lớp học phần)
+('SV042', 'LHP18', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV043', 'LHP13', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV044', 'LHP19', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV045', 'LHP11', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV046', 'LHP15', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV047', 'LHP14', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV048', 'LHP20', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV049', 'LHP12', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
+('SV050', 'LHP16', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL);
+
+-- Thêm dữ liệu vào bảng BuoiHoc
 INSERT INTO BuoiHoc (maLHP, ngayHoc, gioBatDau, gioKetThuc, phongHoc, chuDe, trangThai) VALUES
 ('LHP01', '2023-09-19', '07:30:00', '09:30:00', 'P101', N'Thiết kế nền móng', N'Đã diễn ra'),
 ('LHP01', '2023-09-26', '07:30:00', '09:30:00', 'P101', N'Vật liệu xây dựng', N'Đã diễn ra'),
@@ -1162,8 +1171,8 @@ INSERT INTO BuoiHoc (maLHP, ngayHoc, gioBatDau, gioKetThuc, phongHoc, chuDe, tra
 ('LHP02', '2023-09-27', '09:45:00', '11:45:00', 'P102', N'Quảng cáo', N'Đã diễn ra'),
 ('LHP03', '2023-09-21', '13:30:00', '15:30:00', 'P103', N'Lập trình hướng đối tượng', N'Đã diễn ra'),
 ('LHP03', '2023-09-28', '13:30:00', '15:30:00', 'P103', N'Xử lý ngoại lệ', N'Đã diễn ra'),
-('LHP04', '2024-09-19', '07:30:00', '09:30:00', 'P104', N'Hệ thống truyền động', N'Chưa diễn ra'),
-('LHP04', '2024-09-26', '07:30:00', '09:30:00', 'P104', N'Bảo trì ô tô', N'Chưa diễn ra'),
+('LHP04', '2023-09-22', '07:30:00', '09:30:00', 'P104', N'Hệ thống truyền động', N'Đã diễn ra'),
+('LHP04', '2023-09-29', '07:30:00', '09:30:00', 'P104', N'Bảo trì ô tô', N'Đã diễn ra'),
 ('LHP05', '2023-09-20', '09:45:00', '11:45:00', 'P105', N'Vận tải logistics', N'Đã diễn ra'),
 ('LHP05', '2023-09-27', '09:45:00', '11:45:00', 'P105', N'Tối ưu hóa chuỗi cung ứng', N'Đã diễn ra'),
 ('LHP06', '2024-02-19', '07:30:00', '09:30:00', 'P106', N'Tín hiệu số', N'Đã diễn ra'),
@@ -1175,112 +1184,168 @@ INSERT INTO BuoiHoc (maLHP, ngayHoc, gioBatDau, gioKetThuc, phongHoc, chuDe, tra
 ('LHP09', '2024-02-19', '07:30:00', '09:30:00', 'P109', N'Robot công nghiệp', N'Đã diễn ra'),
 ('LHP09', '2024-02-26', '07:30:00', '09:30:00', 'P109', N'Tự động hóa', N'Đã diễn ra'),
 ('LHP10', '2024-02-20', '09:45:00', '11:45:00', 'P110', N'Quản lý cảng', N'Đã diễn ra'),
-('LHP10', '2024-02-27', '09:45:00', '11:45:00', 'P110', N'Vận tải đa phương thức', N'Đã diễn ra');
--- Thêm dữ liệu vào bảng DiemDanh (Điểm danh cho một số buổi học)
+('LHP10', '2024-02-27', '09:45:00', '11:45:00', 'P110', N'Vận tải đa phương thức', N'Đã diễn ra'),
+('LHP21', '2023-09-19', '07:30:00', '09:30:00', 'P111', N'Toán cao cấp - Ma trận', N'Đã diễn ra'),
+('LHP21', '2023-09-26', '07:30:00', '09:30:00', 'P111', N'Toán cao cấp - Đạo hàm', N'Đã diễn ra'),
+('LHP22', '2024-02-20', '09:45:00', '11:45:00', 'P112', N'Vật lý - Điện từ', N'Đã diễn ra'),
+('LHP22', '2024-02-27', '09:45:00', '11:45:00', 'P112', N'Vật lý - Quang học', N'Đã diễn ra'),
+-- Thêm buổi học cho các lớp học phần khác
+('LHP11', '2024-09-19', '07:30:00', '09:30:00', 'P113', N'Toán cao cấp - Hệ phương trình', N'Chưa diễn ra'),
+('LHP12', '2024-09-20', '09:45:00', '11:45:00', 'P114', N'Vật lý - Nhiệt động lực học', N'Chưa diễn ra'),
+('LHP13', '2024-09-21', '13:30:00', '15:30:00', 'P115', N'Word và Excel cơ bản', N'Chưa diễn ra');
+
+-- Thêm dữ liệu vào bảng DiemDanh
 INSERT INTO DiemDanh (maSinhVien, maBuoi, trangThai, thoiGianGhi, ghiChu) VALUES
 -- LHP01
-('SV001', 41, N'Có mặt', '2023-09-19 07:30:00', NULL),
-('SV002', 41, N'Vắng mặt', '2023-09-19 07:30:00', N'Không có phép'),
-('SV003', 41, N'Có mặt', '2023-09-19 07:30:00', NULL),
-('SV004', 41, N'Có mặt', '2023-09-19 07:30:00', NULL),
-('SV005', 41, N'Có phép', '2023-09-19 07:30:00', N'Xin nghỉ ốm'),
-('SV001', 42, N'Có mặt', '2023-09-26 07:30:00', NULL),
-('SV002', 42, N'Có mặt', '2023-09-26 07:30:00', NULL),
-('SV003', 42, N'Vắng mặt', '2023-09-26 07:30:00', N'Không có phép'),
-('SV004', 42, N'Có mặt', '2023-09-26 07:30:00', NULL),
-('SV005', 42, N'Có mặt', '2023-09-26 07:30:00', NULL),
+('SV001', 1, N'Có mặt', '2023-09-19 07:30:00', NULL),
+('SV002', 1, N'Vắng mặt', '2023-09-19 07:30:00', N'Không có phép'),
+('SV003', 1, N'Có mặt', '2023-09-19 07:30:00', NULL),
+('SV004', 1, N'Có mặt', '2023-09-19 07:30:00', NULL),
+('SV005', 1, N'Có phép', '2023-09-19 07:30:00', N'Xin nghỉ ốm'),
+('SV001', 2, N'Có mặt', '2023-09-26 07:30:00', NULL),
+('SV002', 2, N'Có mặt', '2023-09-26 07:30:00', NULL),
+('SV003', 2, N'Vắng mặt', '2023-09-26 07:30:00', N'Không có phép'),
+('SV004', 2, N'Có mặt', '2023-09-26 07:30:00', NULL),
+('SV005', 2, N'Có mặt', '2023-09-26 07:30:00', NULL),
 -- LHP02
-('SV006', 43, N'Có mặt', '2023-09-20 09:45:00', NULL),
-('SV007', 43, N'Có mặt', '2023-09-20 09:45:00', NULL),
-('SV008', 43, N'Có mặt', '2023-09-20 09:45:00', NULL),
-('SV009', 43, N'Vắng mặt', '2023-09-20 09:45:00', N'Không có phép'),
-('SV010', 43, N'Có mặt', '2023-09-20 09:45:00', NULL),
-('SV006', 44, N'Có mặt', '2023-09-27 09:45:00', NULL),
-('SV007', 44, N'Có mặt', '2023-09-27 09:45:00', NULL),
-('SV008', 44, N'Có mặt', '2023-09-27 09:45:00', NULL),
-('SV009', 44, N'Có phép', '2023-09-27 09:45:00', N'Xin nghỉ gia đình'),
-('SV010', 44, N'Có mặt', '2023-09-27 09:45:00', NULL),
+('SV006', 3, N'Có mặt', '2023-09-20 09:45:00', NULL),
+('SV007', 3, N'Có mặt', '2023-09-20 09:45:00', NULL),
+('SV008', 3, N'Có mặt', '2023-09-20 09:45:00', NULL),
+('SV009', 3, N'Vắng mặt', '2023-09-20 09:45:00', N'Không có phép'),
+('SV010', 3, N'Có mặt', '2023-09-20 09:45:00', NULL),
+('SV006', 4, N'Có mặt', '2023-09-27 09:45:00', NULL),
+('SV007', 4, N'Có mặt', '2023-09-27 09:45:00', NULL),
+('SV008', 4, N'Có mặt', '2023-09-27 09:45:00', NULL),
+('SV009', 4, N'Có phép', '2023-09-27 09:45:00', N'Xin nghỉ gia đình'),
+('SV010', 4, N'Có mặt', '2023-09-27 09:45:00', NULL),
 -- LHP03
-('SV011', 45, N'Có mặt', '2023-09-21 13:30:00', NULL),
-('SV012', 45, N'Có mặt', '2023-09-21 13:30:00', NULL),
-('SV013', 45, N'Có mặt', '2023-09-21 13:30:00', NULL),
-('SV014', 45, N'Vắng mặt', '2023-09-21 13:30:00', N'Không có phép'),
-('SV015', 45, N'Có mặt', '2023-09-21 13:30:00', NULL),
-('SV011', 46, N'Có mặt', '2023-09-28 13:30:00', NULL),
-('SV012', 46, N'Có mặt', '2023-09-28 13:30:00', NULL),
-('SV013', 46, N'Có mặt', '2023-09-28 13:30:00', NULL),
-('SV014', 46, N'Có mặt', '2023-09-28 13:30:00', NULL),
-('SV015', 46, N'Có mặt', '2023-09-28 13:30:00', NULL),
+('SV011', 5, N'Có mặt', '2023-09-21 13:30:00', NULL),
+('SV012', 5, N'Có mặt', '2023-09-21 13:30:00', NULL),
+('SV013', 5, N'Có mặt', '2023-09-21 13:30:00', NULL),
+('SV014', 5, N'Vắng mặt', '2023-09-21 13:30:00', N'Không có phép'),
+('SV015', 5, N'Có mặt', '2023-09-21 13:30:00', NULL),
+('SV011', 6, N'Có mặt', '2023-09-28 13:30:00', NULL),
+('SV012', 6, N'Có mặt', '2023-09-28 13:30:00', NULL),
+('SV013', 6, N'Có mặt', '2023-09-28 13:30:00', NULL),
+('SV014', 6, N'Có mặt', '2023-09-28 13:30:00', NULL),
+('SV015', 6, N'Có mặt', '2023-09-28 13:30:00', NULL),
+-- LHP04
+('SV016', 7, N'Có mặt', '2023-09-22 07:30:00', NULL),
+('SV017', 7, N'Có mặt', '2023-09-22 07:30:00', NULL),
+('SV018', 7, N'Có mặt', '2023-09-22 07:30:00', NULL),
+('SV019', 7, N'Vắng mặt', '2023-09-22 07:30:00', N'Không có phép'),
+('SV020', 7, N'Có mặt', '2023-09-22 07:30:00', NULL),
+('SV016', 8, N'Có mặt', '2023-09-29 07:30:00', NULL),
+('SV017', 8, N'Có mặt', '2023-09-29 07:30:00', NULL),
+('SV018', 8, N'Có mặt', '2023-09-29 07:30:00', NULL),
+('SV019', 8, N'Có phép', '2023-09-29 07:30:00', N'Xin nghỉ ốm'),
+('SV020', 8, N'Có mặt', '2023-09-29 07:30:00', NULL),
 -- LHP05
-('SV021', 47, N'Có mặt', '2023-09-20 09:45:00', NULL),
-('SV022', 47, N'Có mặt', '2023-09-20 09:45:00', NULL),
-('SV023', 47, N'Vắng mặt', '2023-09-20 09:45:00', N'Không có phép'),
-('SV024', 47, N'Có mặt', '2023-09-20 09:45:00', NULL),
-('SV025', 47, N'Có mặt', '2023-09-20 09:45:00', NULL),
-('SV021', 48, N'Có mặt', '2023-09-27 09:45:00', NULL),
-('SV022', 48, N'Có mặt', '2023-09-27 09:45:00', NULL),
-('SV023', 48, N'Có mặt', '2023-09-27 09:45:00', NULL),
-('SV024', 48, N'Có mặt', '2023-09-27 09:45:00', NULL),
-('SV025', 48, N'Có mặt', '2023-09-27 09:45:00', NULL),
-
--- LHP06 (đã có dữ liệu, bổ sung thêm để kiểm tra)
-('SV026', 51, N'Có mặt', '2024-02-19 07:30:00', NULL),
-('SV027', 51, N'Có mặt', '2024-02-19 07:30:00', NULL),
-('SV028', 51, N'Vắng mặt', '2024-02-19 07:30:00', N'Không có phép'),
-('SV029', 51, N'Có mặt', '2024-02-19 07:30:00', NULL),
-('SV030', 51, N'Có phép', '2024-02-19 07:30:00', N'Xin nghỉ ốm'),
-('SV026', 52, N'Có mặt', '2024-02-26 07:30:00', NULL),
-('SV027', 52, N'Có mặt', '2024-02-26 07:30:00', NULL),
-('SV028', 52, N'Có mặt', '2024-02-26 07:30:00', NULL),
-('SV029', 52, N'Vắng mặt', '2024-02-26 07:30:00', N'Không có phép'),
-('SV030', 52, N'Có mặt', '2024-02-26 07:30:00', NULL),
+('SV021', 9, N'Có mặt', '2023-09-20 09:45:00', NULL),
+('SV022', 9, N'Có mặt', '2023-09-20 09:45:00', NULL),
+('SV023', 9, N'Vắng mặt', '2023-09-20 09:45:00', N'Không có phép'),
+('SV024', 9, N'Có mặt', '2023-09-20 09:45:00', NULL),
+('SV025', 9, N'Có mặt', '2023-09-20 09:45:00', NULL),
+('SV021', 10, N'Có mặt', '2023-09-27 09:45:00', NULL),
+('SV022', 10, N'Có mặt', '2023-09-27 09:45:00', NULL),
+('SV023', 10, N'Có mặt', '2023-09-27 09:45:00', NULL),
+('SV024', 10, N'Có mặt', '2023-09-27 09:45:00', NULL),
+('SV025', 10, N'Có mặt', '2023-09-27 09:45:00', NULL),
+-- LHP06
+('SV026', 11, N'Có mặt', '2024-02-19 07:30:00', NULL),
+('SV027', 11, N'Có mặt', '2024-02-19 07:30:00', NULL),
+('SV028', 11, N'Vắng mặt', '2024-02-19 07:30:00', N'Không có phép'),
+('SV029', 11, N'Có mặt', '2024-02-19 07:30:00', NULL),
+('SV030', 11, N'Có phép', '2024-02-19 07:30:00', N'Xin nghỉ ốm'),
+('SV026', 12, N'Có mặt', '2024-02-26 07:30:00', NULL),
+('SV027', 12, N'Có mặt', '2024-02-26 07:30:00', NULL),
+('SV028', 12, N'Có mặt', '2024-02-26 07:30:00', NULL),
+('SV029', 12, N'Vắng mặt', '2024-02-26 07:30:00', N'Không có phép'),
+('SV030', 12, N'Có mặt', '2024-02-26 07:30:00', NULL),
 -- LHP07
-('SV031', 53, N'Có mặt', '2024-02-20 09:45:00', NULL),
-('SV032', 53, N'Có mặt', '2024-02-20 09:45:00', NULL),
-('SV033', 53, N'Có mặt', '2024-02-20 09:45:00', NULL),
-('SV034', 53, N'Có mặt', '2024-02-20 09:45:00', NULL),
-('SV035', 53, N'Có mặt', '2024-02-20 09:45:00', NULL),
-('SV031', 54, N'Có mặt', '2024-02-27 09:45:00', NULL),
-('SV032', 54, N'Có mặt', '2024-02-27 09:45:00', NULL),
-('SV033', 54, N'Có mặt', '2024-02-27 09:45:00', NULL),
-('SV034', 54, N'Có mặt', '2024-02-27 09:45:00', NULL),
-('SV035', 54, N'Có mặt', '2024-02-27 09:45:00', NULL),
+('SV031', 13, N'Có mặt', '2024-02-20 09:45:00', NULL),
+('SV032', 13, N'Có mặt', '2024-02-20 09:45:00', NULL),
+('SV033', 13, N'Có mặt', '2024-02-20 09:45:00', NULL),
+('SV034', 13, N'Có mặt', '2024-02-20 09:45:00', NULL),
+('SV035', 13, N'Có mặt', '2024-02-20 09:45:00', NULL),
+('SV031', 14, N'Có mặt', '2024-02-27 09:45:00', NULL),
+('SV032', 14, N'Có mặt', '2024-02-27 09:45:00', NULL),
+('SV033', 14, N'Cómặt', '2024-02-27 09:45:00', NULL),
+('SV034', 14, N'Có mặt', '2024-02-27 09:45:00', NULL),
+('SV035', 14, N'Có mặt', '2024-02-27 09:45:00', NULL),
 -- LHP08
-('SV036', 55, N'Có mặt', '2024-02-21 13:30:00', NULL),
-('SV037', 55, N'Có mặt', '2024-02-21 13:30:00', NULL),
-('SV038', 55, N'Vắng mặt', '2024-02-21 13:30:00', N'Không có phép'),
-('SV039', 55, N'Có mặt', '2024-02-21 13:30:00', NULL),
-('SV040', 55, N'Có mặt', '2024-02-21 13:30:00', NULL),
-('SV036', 56, N'Có mặt', '2024-02-28 13:30:00', NULL),
-('SV037', 56, N'Có mặt', '2024-02-28 13:30:00', NULL),
-('SV038', 56, N'Có mặt', '2024-02-28 13:30:00', NULL),
-('SV039', 56, N'Vắng mặt', '2024-02-28 13:30:00', N'Không có phép'),
-('SV040', 56, N'Có mặt', '2024-02-28 13:30:00', NULL),
+('SV036', 15, N'Có mặt', '2024-02-21 13:30:00', NULL),
+('SV037', 15, N'Có mặt', '2024-02-21 13:30:00', NULL),
+('SV038', 15, N'Vắng mặt', '2024-02-21 13:30:00', N'Không có phép'),
+('SV039', 15, N'Có mặt', '2024-02-21 13:30:00', NULL),
+('SV040', 15, N'Có mặt', '2024-02-21 13:30:00', NULL),
+('SV036', 16, N'Có mặt', '2024-02-28 13:30:00', NULL),
+('SV037', 16, N'Có mặt', '2024-02-28 13:30:00', NULL),
+('SV038', 16, N'Có mặt', '2024-02-28 13:30:00', NULL),
+('SV039', 16, N'Vắng mặt', '2024-02-28 13:30:00', N'Không có phép'),
+('SV040', 16, N'Có mặt', '2024-02-28 13:30:00', NULL),
 -- LHP09
-('SV041', 57, N'Có mặt', '2024-02-19 07:30:00', NULL),
-('SV042', 57, N'Có mặt', '2024-02-19 07:30:00', NULL),
-('SV043', 57, N'Có mặt', '2024-02-19 07:30:00', NULL),
-('SV044', 57, N'Có mặt', '2024-02-19 07:30:00', NULL),
-('SV045', 57, N'Có mặt', '2024-02-19 07:30:00', NULL),
-('SV041', 58, N'Có mặt', '2024-02-26 07:30:00', NULL),
-('SV042', 58, N'Có mặt', '2024-02-26 07:30:00', NULL),
-('SV043', 58, N'Có mặt', '2024-02-26 07:30:00', NULL),
-('SV044', 58, N'Có mặt', '2024-02-26 07:30:00', NULL),
-('SV045', 58, N'Có mặt', '2024-02-26 07:30:00', NULL),
+('SV041', 17, N'Có mặt', '2024-02-19 07:30:00', NULL),
+('SV042', 17, N'Có mặt', '2024-02-19 07:30:00', NULL),
+('SV043', 17, N'Có mặt', '2024-02-19 07:30:00', NULL),
+('SV044', 17, N'Có mặt', '2024-02-19 07:30:00', NULL),
+('SV045', 17, N'Có mặt', '2024-02-19 07:30:00', NULL),
+('SV041', 18, N'Có mặt', '2024-02-26 07:30:00', NULL),
+('SV042', 18, N'Có mặt', '2024-02-26 07:30:00', NULL),
+('SV043', 18, N'Có mặt', '2024-02-26 07:30:00', NULL),
+('SV044', 18, N'Có mặt', '2024-02-26 07:30:00', NULL),
+('SV045', 18, N'Có mặt', '2024-02-26 07:30:00', NULL),
 -- LHP10
-('SV046', 59, N'Có mặt', '2024-02-20 09:45:00', NULL),
-('SV047', 59, N'Có mặt', '2024-02-20 09:45:00', NULL),
-('SV048', 59, N'Có mặt', '2024-02-20 09:45:00', NULL),
-('SV049', 59, N'Vắng mặt', '2024-02-20 09:45:00', N'Không có phép'),
-('SV050', 59, N'Có mặt', '2024-02-20 09:45:00', NULL),
-('SV046', 60, N'Có mặt', '2024-02-27 09:45:00', NULL),
-('SV047', 60, N'Có mặt', '2024-02-27 09:45:00', NULL),
-('SV048', 60, N'Có mặt', '2024-02-27 09:45:00', NULL),
-('SV049', 60, N'Có mặt', '2024-02-27 09:45:00', NULL),
-('SV050', 60, N'Có mặt', '2024-02-27 09:45:00', NULL);
+('SV046', 19, N'Có mặt', '2024-02-20 09:45:00', NULL),
+('SV047', 19, N'Có mặt', '2024-02-20 09:45:00', NULL),
+('SV048', 19, N'Có mặt', '2024-02-20 09:45:00', NULL),
+('SV049', 19, N'Vắng mặt', '2024-02-20 09:45:00', N'Không có phép'),
+('SV050', 19, N'Có mặt', '2024-02-20 09:45:00', NULL),
+('SV046', 20, N'Có mặt', '2024-02-27 09:45:00', NULL),
+('SV047', 20, N'Có mặt', '2024-02-27 09:45:00', NULL),
+('SV048', 20, N'Có mặt', '2024-02-27 09:45:00', NULL),
+('SV049', 20, N'Có mặt', '2024-02-27 09:45:00', NULL),
+('SV050', 20, N'Có mặt', '2024-02-27 09:45:00', NULL),
+-- LHP21
+('SV001', 21, N'Có mặt', '2023-09-19 07:30:00', NULL),
+('SV002', 21, N'Vắng mặt', '2023-09-19 07:30:00', N'Không có phép'),
+('SV003', 21, N'Có mặt', '2023-09-19 07:30:00', NULL),
+('SV004', 21, N'Có mặt', '2023-09-19 07:30:00', NULL),
+('SV005', 21, N'Có phép', '2023-09-19 07:30:00', N'Xin nghỉ ốm'),
+('SV001', 22, N'Có mặt', '2023-09-26 07:30:00', NULL),
+('SV002', 22, N'Có mặt', '2023-09-26 07:30:00', NULL),
+('SV003', 22, N'Vắng mặt', '2023-09-26 07:30:00', N'Không có phép'),
+('SV004', 22, N'Có mặt', '2023-09-26 07:30:00', NULL),
+('SV005', 22, N'Có mặt', '2023-09-26 07:30:00', NULL),
+-- LHP22
+('SV006', 23, N'Có mặt', '2024-02-20 09:45:00', NULL),
+('SV007', 23, N'Có mặt', '2024-02-20 09:45:00', NULL),
+('SV008', 23, N'Có mặt', '2024-02-20 09:45:00', NULL),
+('SV009', 23, N'Vắng mặt', '2024-02-20 09:45:00', N'Không có phép'),
+('SV010', 23, N'Có mặt', '2024-02-20 09:45:00', NULL),
+('SV006', 24, N'Có mặt', '2024-02-27 09:45:00', NULL),
+('SV007', 24, N'Có mặt', '2024-02-27 09:45:00', NULL),
+('SV008', 24, N'Có mặt', '2024-02-27 09:45:00', NULL),
+('SV009', 24, N'Có phép', '2024-02-27 09:45:00', N'Xin nghỉ gia đình'),
+('SV010', 24, N'Có mặt', '2024-02-27 09:45:00', NULL);
 
--- Thêm dữ liệu vào bảng DanhGiaThaiDoHocTap (Đánh giá thái độ học tập)
+-- Thêm dữ liệu vào bảng DanhGiaThaiDoHocTap
 INSERT INTO DanhGiaThaiDoHocTap (maSinhVien, maLHP, ngayDanhGia, nguoiDanhGia, tyLeThamGia, mucDoTapTrung, hoanThanhBaiTap, thamGiaThaoLuan, tinhChuDong, lamViecNhom, tonTrong, ghiChu) VALUES
+('SV001', 'LHP01', '2023-12-10', 'GV01', 40, N'Kém', 50, 3, N'Thụ động', N'Kém', N'Kém', N'Cần cải thiện'), -- tyLeThamGia dưới 50%
+('SV002', 'LHP01', '2023-12-10', 'GV01', 55, N'Trung bình', 60, 4, N'Trung bình', N'Trung bình', N'Trung bình', N'Ổn định'), -- tyLeThamGia 50-59%
+('SV003', 'LHP01', '2023-12-10', 'GV01', 70, N'Khá', 75, 6, N'Trung bình', N'Khá', N'Khá', N'Ổn định'), -- tyLeThamGia 70-79%
+('SV004', 'LHP01', '2023-12-10', 'GV01', 85, N'Tốt', 80, 8, N'Chủ động', N'Tốt', N'Tốt', N'Tích cực'), -- tyLeThamGia 80-89%
+('SV005', 'LHP01', '2023-12-10', 'GV01', 95, N'Xuất sắc', 90, 9, N'Chủ động', N'Tốt', N'Tốt', N'Rất xuất sắc'), -- tyLeThamGia 90-100%
+('SV006', 'LHP02', '2023-12-10', 'GV02', 45, N'Kém', 55, 3, N'Thụ động', N'Kém', N'Kém', N'Cần cải thiện'), -- tyLeThamGia dưới 50%
+('SV007', 'LHP02', '2023-12-10', 'GV02', 60, N'Trung bình', 65, 5, N'Trung bình', N'Trung bình', N'Trung bình', N'Ổn định'),
+('SV008', 'LHP02', '2023-12-10', 'GV02', 75, N'Khá', 70, 7, N'Trung bình', N'Khá', N'Khá', N'Ổn định'),
+('SV009', 'LHP02', '2023-12-10', 'GV02', 80, N'Tốt', 85, 8, N'Chủ động', N'Tốt', N'Tốt', N'Tích cực'),
+('SV010', 'LHP02', '2023-12-10', 'GV02', 90, N'Xuất sắc', 95, 9, N'Chủ động', N'Tốt', N'Tốt', N'Rất xuất sắc'),
+('SV011', 'LHP03', '2023-12-10', 'GV04', 50, N'Trung bình', 60, 4, N'Trung bình', N'Trung bình', N'Trung bình', N'Ổn định'), -- tyLeThamGia 50-59%
+('SV012', 'LHP03', '2023-12-10', 'GV04', 65, N'Khá', 70, 6, N'Trung bình', N'Khá', N'Khá', N'Ổn định'),
+('SV013', 'LHP03', '2023-12-10', 'GV04', 80, N'Tốt', 85, 8, N'Chủ động', N'Tốt', N'Tốt', N'Tích cực'),
+('SV014', 'LHP03', '2023-12-10', 'GV04', 85, N'Xuất sắc', 90, 9, N'Chủ động', N'Tốt', N'Tốt', N'Rất xuất sắc'),
+('SV015', 'LHP03', '2023-12-10', 'GV04', 90, N'Xuất sắc', 95, 9, N'Chủ động', N'Tốt', N'Tốt', N'Rất xuất sắc'),
 ('SV016', 'LHP04', '2023-12-10', 'GV03', 95, N'Xuất sắc', 90, 9, N'Chủ động', N'Tốt', N'Tốt', N'Rất tích cực'),
 ('SV017', 'LHP04', '2023-12-10', 'GV03', 80, N'Khá', 85, 7, N'Trung bình', N'Khá', N'Khá', N'Ổn định'),
 ('SV018', 'LHP04', '2023-12-10', 'GV03', 85, N'Tốt', 80, 8, N'Chủ động', N'Tốt', N'Tốt', N'Tích cực tham gia'),
@@ -1315,18 +1380,48 @@ INSERT INTO DanhGiaThaiDoHocTap (maSinhVien, maLHP, ngayDanhGia, nguoiDanhGia, t
 ('SV047', 'LHP10', '2024-05-10', 'GV17', 80, N'Khá', 85, 7, N'Trung bình', N'Khá', N'Khá', N'Ổn định'),
 ('SV048', 'LHP10', '2024-05-10', 'GV17', 85, N'Tốt', 80, 8, N'Chủ động', N'Tốt', N'Tốt', N'Tích cực tham gia'),
 ('SV049', 'LHP10', '2024-05-10', 'GV17', 60, N'Kém', 70, 5, N'Thụ động', N'Kém', N'Trung bình', N'Cần cải thiện'),
-('SV050', 'LHP10', '2024-05-10', 'GV17', 90, N'Tốt', 85, 8, N'Chủ động', N'Tốt', N'Tốt', N'Rất tốt');
+('SV050', 'LHP10', '2024-05-10', 'GV17', 90, N'Tốt', 85, 8, N'Chủ động', N'Tốt', N'Tốt', N'Rất tốt'),
+('SV001', 'LHP21', '2023-12-10', 'GV05', 45, N'Kém', 50, 3, N'Thụ động', N'Kém', N'Kém', N'Cần cải thiện'),
+('SV002', 'LHP21', '2023-12-10', 'GV05', 60, N'Trung bình', 65, 5, N'Trung bình', N'Trung bình', N'Trung bình', N'Ổn định'),
+('SV003', 'LHP21', '2023-12-10', 'GV05', 75, N'Khá', 70, 7, N'Trung bình', N'Khá', N'Khá', N'Ổn định'),
+('SV004', 'LHP21', '2023-12-10', 'GV05', 80, N'Tốt', 85, 8, N'Chủ động', N'Tốt', N'Tốt', N'Tích cực'),
+('SV005', 'LHP21', '2023-12-10', 'GV05', 90, N'Xuất sắc', 95, 9, N'Chủ động', N'Tốt', N'Tốt', N'Rất xuất sắc'),
+('SV006', 'LHP22', '2024-05-10', 'GV15', 50, N'Kém', 55, 4, N'Thụ động', N'Kém', N'Trung bình', N'Cần cải thiện'),
+('SV007', 'LHP22', '2024-05-10', 'GV15', 65, N'Trung bình', 60, 5, N'Trung bình', N'Trung bình', N'Trung bình', N'Ổn định'),
+('SV008', 'LHP22', '2024-05-10', 'GV15', 80, N'Khá', 75, 7, N'Trung bình', N'Khá', N'Khá', N'Ổn định'),
+('SV009', 'LHP22', '2024-05-10', 'GV15', 85, N'Tốt', 80, 8, N'Chủ động', N'Tốt', N'Tốt', N'Tích cực'),
+('SV010', 'LHP22', '2024-05-10', 'GV15', 90, N'Xuất sắc', 90, 9, N'Chủ động', N'Tốt', N'Tốt', N'Rất xuất sắc');
 
--- Thêm dữ liệu vào bảng ViPhamKyLuat (Một số vi phạm)
+-- Thêm dữ liệu vào bảng ViPhamKyLuat
 INSERT INTO ViPhamKyLuat (maSinhVien, maLHP, ngayViPham, loaiViPham, mucDoViPham, bienPhapXuLy, diemTru, nguoiXuLy, trangThai, ghiChu) VALUES
+('SV001', 'LHP01', '2023-11-20', N'Đi muộn nhiều lần', N'Nhẹ', N'Nhắc nhở', 5, 'GV01', N'Đã xử lý', N'Cam kết không tái phạm'),
+('SV006', 'LHP02', '2023-11-20', N'Không nộp bài tập', N'Trung bình', N'Cảnh cáo', 10, 'GV02', N'Đã xử lý', N'Đã nộp bổ sung'),
+('SV011', 'LHP03', '2023-11-20', N'Vi phạm nội quy lớp', N'Nghiêm trọng', N'Đình chỉ học 1 tuần', 20, 'GV04', N'Đã xử lý', N'Cam kết không tái phạm'),
 ('SV019', 'LHP04', '2023-11-20', N'Sao chép bài tập', N'Trung bình', N'Cảnh cáo', 10, 'GV03', N'Đã xử lý', N'Đã nộp lại bài'),
 ('SV023', 'LHP05', '2023-10-15', N'Gây rối trong lớp', N'Nghiêm trọng', N'Đình chỉ học 1 tuần', 20, 'GV07', N'Đã xử lý', N'Cam kết không tái phạm'),
 ('SV029', 'LHP06', '2024-03-10', N'Vi phạm nội quy thi', N'Rất nghiêm trọng', N'Hủy kết quả thi', 30, 'GV08', N'Đã xử lý', N'Đã thi lại'),
 ('SV039', 'LHP08', '2024-03-05', N'Vắng mặt không phép', N'Trung bình', N'Cảnh cáo', 10, 'GV11', N'Đã xử lý', N'Vắng 2 buổi liên tiếp'),
-('SV049', 'LHP10', '2024-03-15', N'Sử dụng điện thoại trong giờ', N'Nhẹ', N'Nhắc nhở', 5, 'GV17', N'Đã xử lý', N'Cam kết tuân thủ');
+('SV049', 'LHP10', '2024-03-15', N'Sử dụng điện thoại trong giờ', N'Nhẹ', N'Nhắc nhở', 5, 'GV17', N'Đã xử lý', N'Cam kết tuân thủ'),
+('SV002', 'LHP21', '2023-11-20', N'Không tham gia hoạt động lớp', N'Nhẹ', N'Nhắc nhở', 5, 'GV05', N'Đã xử lý', N'Cam kết tham gia đầy đủ'),
+('SV007', 'LHP22', '2024-03-10', N'Vi phạm nội quy lớp', N'Trung bình', N'Cảnh cáo', 10, 'GV15', N'Đã xử lý', N'Cam kết không tái phạm');
 
--- Thêm dữ liệu vào bảng DiemRenLuyen (Điểm rèn luyện cho sinh viên)
+-- Thêm dữ liệu vào bảng DiemRenLuyen
 INSERT INTO DiemRenLuyen (maSinhVien, hocKy, namHoc, diemTuDanhGia, diemLop, diemKhoa, diemCuoiCung, xepLoai, nguoiDanhGia, ngayDanhGia, coHocBong, loaiHocBong, giaTriHocBong, ghiChu) VALUES
+('SV001', '1', '2023-2024', 45, 40, 42, 35, N'Yếu', 'GV01', '2023-12-20', 0, NULL, NULL, N'Có vi phạm'), -- Điểm thấp
+('SV002', '1', '2023-2024', 60, 55, 58, 53, N'Trung bình', 'GV01', '2023-12-20', 0, NULL, NULL, N'Có vi phạm'),
+('SV003', '1', '2023-2024', 75, 70, 72, 72, N'Khá', 'GV01', '2023-12-20', 0, NULL, NULL, NULL),
+('SV004', '1', '2023-2024', 85, 80, 82, 82, N'Khá', 'GV01', '2023-12-20', 0, NULL, NULL, NULL),
+('SV005', '1', '2023-2024', 95, 90, 92, 92, N'Xuất sắc', 'GV01', '2023-12-20', 1, N'Xuất sắc', 7000000, N'Rất xuất sắc'),
+('SV006', '1', '2023-2024', 35, 30, 32, 22, N'Yếu', 'GV02', '2023-12-20', 0, NULL, NULL, N'Có vi phạm'), -- Điểm thấp
+('SV007', '1', '2023-2024', 65, 60, 62, 62, N'Trung bình', 'GV02', '2023-12-20', 0, NULL, NULL, NULL),
+('SV008', '1', '2023-2024', 80, 75, 78, 78, N'Khá', 'GV02', '2023-12-20', 0, NULL, NULL, NULL),
+('SV009', '1', '2023-2024', 85, 80, 82, 82, N'Khá', 'GV02', '2023-12-20', 0, NULL, NULL, NULL),
+('SV010', '1', '2023-2024', 90, 85, 88, 88, N'Tốt', 'GV02', '2023-12-20', 1, N'Khá', 5000000, N'Tích cực'),
+('SV011', '1', '2023-2024', 50, 45, 48, 28, N'Yếu', 'GV04', '2023-12-20', 0, NULL, NULL, N'Có vi phạm'), -- Điểm thấp
+('SV012', '1', '2023-2024', 70, 65, 68, 68, N'Trung bình', 'GV04', '2023-12-20', 0, NULL, NULL, NULL),
+('SV013', '1', '2023-2024', 85, 80, 82, 82, N'Khá', 'GV04', '2023-12-20', 0, NULL, NULL, NULL),
+('SV014', '1', '2023-2024', 90, 85, 88, 88, N'Tốt', 'GV04', '2023-12-20', 1, N'Khá', 5000000, N'Tích cực'),
+('SV015', '1', '2023-2024', 95, 90, 92, 92, N'Xuất sắc', 'GV04', '2023-12-20', 1, N'Xuất sắc', 7000000, N'Rất xuất sắc'),
 ('SV016', '1', '2023-2024', 95, 90, 92, 92, N'Xuất sắc', 'GV03', '2023-12-20', 1, N'Xuất sắc', 7000000, N'Rất xuất sắc'),
 ('SV017', '1', '2023-2024', 85, 80, 82, 82, N'Khá', 'GV03', '2023-12-20', 0, NULL, NULL, NULL),
 ('SV018', '1', '2023-2024', 90, 85, 88, 87, N'Tốt', 'GV03', '2023-12-20', 1, N'Khá', 5000000, N'Tích cực'),
@@ -1361,45 +1456,31 @@ INSERT INTO DiemRenLuyen (maSinhVien, hocKy, namHoc, diemTuDanhGia, diemLop, die
 ('SV047', '2', '2023-2024', 85, 80, 82, 82, N'Khá', 'GV17', '2024-05-20', 0, NULL, NULL, NULL),
 ('SV048', '2', '2023-2024', 90, 85, 88, 87, N'Tốt', 'GV17', '2024-05-20', 1, N'Khá', 5000000, N'Tích cực'),
 ('SV049', '2', '2023-2024', 65, 60, 62, 52, N'Trung bình', 'GV17', '2024-05-20', 0, NULL, NULL, N'Có vi phạm'),
-('SV050', '2', '2023-2024', 90, 85, 88, 87, N'Tốt', 'GV17', '2024-05-20', 1, N'Khá', 5000000, N'Rất tốt');
+('SV050', '2', '2023-2024', 90, 85, 88, 87, N'Tốt', 'GV17', '2024-05-20', 1, N'Khá', 5000000, N'Rất tốt'),
+('SV001', '2', '2023-2024', 50, 45, 48, 48, N'Trung bình', 'GV01', '2024-05-20', 0, NULL, NULL, NULL),
+('SV002', '2', '2023-2024', 65, 60, 62, 60, N'Trung bình', 'GV05', '2024-05-20', 0, NULL, NULL, N'Có vi phạm'),
+('SV003', '2', '2023-2024', 80, 75, 78, 78, N'Khá', 'GV05', '2024-05-20', 0, NULL, NULL, NULL),
+('SV004', '2', '2023-2024', 85, 80, 82, 82, N'Khá', 'GV05', '2024-05-20', 0, NULL, NULL, NULL),
+('SV005', '2', '2023-2024', 90, 85, 88, 88, N'Tốt', 'GV05', '2024-05-20', 1, N'Khá', 5000000, N'Tích cực'),
+('SV006', '2', '2023-2024', 40, 35, 38, 28, N'Yếu', 'GV15', '2024-05-20', 0, NULL, NULL, N'Có vi phạm'),
+('SV007', '2', '2023-2024', 55, 50, 52, 42, N'Yếu', 'GV15', '2024-05-20', 0, NULL, NULL, N'Có vi phạm'),
+('SV008', '2', '2023-2024', 70, 65, 68, 68, N'Trung bình', 'GV15', '2024-05-20', 0, NULL, NULL, NULL),
+('SV009', '2', '2023-2024', 85, 80, 82, 82, N'Khá', 'GV15', '2024-05-20', 0, NULL, NULL, NULL),
+('SV010', '2', '2023-2024', 90, 85, 88, 88, N'Tốt', 'GV15', '2024-05-20', 1, N'Khá', 5000000, N'Tích cực');
 
--- Thêm dữ liệu vào bảng ChiTietDanhGia (Chi tiết đánh giá theo tiêu chí)
+-- Thêm dữ liệu vào bảng ChiTietDanhGia
 INSERT INTO ChiTietDanhGia (maDanhGia, maTieuChi, diem, ghiChu) VALUES
-(16, 'TC01', 95, N'Tham gia xuất sắc'), (16, 'TC02', 90, N'Tập trung xuất sắc'), (16, 'TC03', 90, N'Hoàn thành bài tập xuất sắc'),
-(17, 'TC01', 80, N'Tham gia ổn'), (17, 'TC02', 85, N'Tập trung khá'), (17, 'TC03', 85, N'Hoàn thành bài tập khá'),
-(18, 'TC01', 85, N'Tham gia khá'), (18, 'TC02', 80, N'Tập trung tốt'), (18, 'TC03', 80, N'Hoàn thành bài tập tốt'),
-(19, 'TC01', 60, N'Tham gia kém'), (19, 'TC02', 70, N'Tập trung kém'), (19, 'TC03', 70, N'Hoàn thành bài tập kém'),
-(20, 'TC01', 90, N'Tham gia đầy đủ'), (20, 'TC02', 85, N'Tập trung tốt'), (20, 'TC03', 85, N'Hoàn thành bài tập tốt'),
-(21, 'TC01', 95, N'Tham gia xuất sắc'), (21, 'TC02', 90, N'Tập trung xuất sắc'), (21, 'TC03', 90, N'Hoàn thành bài tập xuất sắc'),
-(22, 'TC01', 85, N'Tham gia khá'), (22, 'TC02', 80, N'Tập trung khá'), (22, 'TC03', 80, N'Hoàn thành bài tập khá'),
-(23, 'TC01', 70, N'Tham gia chưa đều'), (23, 'TC02', 75, N'Tập trung trung bình'), (23, 'TC03', 75, N'Hoàn thành bài tập trung bình'),
-(24, 'TC01', 90, N'Tham gia đầy đủ'), (24, 'TC02', 85, N'Tập trung tốt'), (24, 'TC03', 85, N'Hoàn thành bài tập tốt'),
-(25, 'TC01', 85, N'Tham gia khá'), (25, 'TC02', 80, N'Tập trung khá'), (25, 'TC03', 80, N'Hoàn thành bài tập khá'),
-(26, 'TC01', 90, N'Tham gia đầy đủ'), (26, 'TC02', 85, N'Tập trung tốt'), (26, 'TC03', 85, N'Hoàn thành bài tập tốt'),
-(27, 'TC01', 80, N'Tham gia ổn'), (27, 'TC02', 85, N'Tập trung khá'), (27, 'TC03', 85, N'Hoàn thành bài tập khá'),
-(28, 'TC01', 85, N'Tham gia khá'), (28, 'TC02', 80, N'Tập trung tốt'), (28, 'TC03', 80, N'Hoàn thành bài tập tốt'),
-(29, 'TC01', 60, N'Tham gia kém'), (29, 'TC02', 70, N'Tập trung kém'), (29, 'TC03', 70, N'Hoàn thành bài tập kém'),
-(30, 'TC01', 90, N'Tham gia đầy đủ'), (30, 'TC02', 85, N'Tập trung tốt'), (30, 'TC03', 85, N'Hoàn thành bài tập tốt'),
-(31, 'TC01', 95, N'Tham gia xuất sắc'), (31, 'TC02', 90, N'Tập trung xuất sắc'), (31, 'TC03', 90, N'Hoàn thành bài tập xuất sắc'),
-(32, 'TC01', 85, N'Tham gia khá'), (32, 'TC02', 80, N'Tập trung khá'), (32, 'TC03', 80, N'Hoàn thành bài tập khá'),
-(33, 'TC01', 70, N'Tham gia chưa đều'), (33, 'TC02', 75, N'Tập trung trung bình'), (33, 'TC03', 75, N'Hoàn thành bài tập trung bình'),
-(34, 'TC01', 90, N'Tham gia đầy đủ'), (34, 'TC02', 85, N'Tập trung tốt'), (34, 'TC03', 85, N'Hoàn thành bài tập tốt'),
-(35, 'TC01', 85, N'Tham gia khá'), (35, 'TC02', 80, N'Tập trung khá'), (35, 'TC03', 80, N'Hoàn thành bài tập khá'),
-(36, 'TC01', 90, N'Tham gia đầy đủ'), (36, 'TC02', 85, N'Tập trung tốt'), (36, 'TC03', 85, N'Hoàn thành bài tập tốt'),
-(37, 'TC01', 80, N'Tham gia ổn'), (37, 'TC02', 85, N'Tập trung khá'), (37, 'TC03', 85, N'Hoàn thành bài tập khá'),
-(38, 'TC01', 85, N'Tham gia khá'), (38, 'TC02', 80, N'Tập trung tốt'), (38, 'TC03', 80, N'Hoàn thành bài tập tốt'),
-(39, 'TC01', 60, N'Tham gia kém'), (39, 'TC02', 70, N'Tập trung kém'), (39, 'TC03', 70, N'Hoàn thành bài tập kém'),
-(40, 'TC01', 90, N'Tham gia đầy đủ'), (40, 'TC02', 85, N'Tập trung tốt'), (40, 'TC03', 85, N'Hoàn thành bài tập tốt'),
-(41, 'TC01', 95, N'Tham gia xuất sắc'), (41, 'TC02', 90, N'Tập trung xuất sắc'), (41, 'TC03', 90, N'Hoàn thành bài tập xuất sắc'),
-(42, 'TC01', 85, N'Tham gia khá'), (42, 'TC02', 80, N'Tập trung khá'), (42, 'TC03', 80, N'Hoàn thành bài tập khá'),
-(43, 'TC01', 70, N'Tham gia chưa đều'), (43, 'TC02', 75, N'Tập trung trung bình'), (43, 'TC03', 75, N'Hoàn thành bài tập trung bình'),
-(44, 'TC01', 90, N'Tham gia đầy đủ'), (44, 'TC02', 85, N'Tập trung tốt'), (44, 'TC03', 85, N'Hoàn thành bài tập tốt'),
-(45, 'TC01', 85, N'Tham gia khá'), (45, 'TC02', 80, N'Tập trung khá'), (45, 'TC03', 80, N'Hoàn thành bài tập khá'),
-(46, 'TC01', 90, N'Tham gia đầy đủ'), (46, 'TC02', 85, N'Tập trung tốt'), (46, 'TC03', 85, N'Hoàn thành bài tập tốt'),
-(47, 'TC01', 80, N'Tham gia ổn'), (47, 'TC02', 85, N'Tập trung khá'), (47, 'TC03', 85, N'Hoàn thành bài tập khá'),
-(48, 'TC01', 85, N'Tham gia khá'), (48, 'TC02', 80, N'Tập trung tốt'), (48, 'TC03', 80, N'Hoàn thành bài tập tốt'),
-(49, 'TC01', 60, N'Tham gia kém'), (49, 'TC02', 70, N'Tập trung kém'), (49, 'TC03', 70, N'Hoàn thành bài tập kém'),
-(50, 'TC01', 90, N'Tham gia đầy đủ'), (50, 'TC02', 85, N'Tập trung tốt'), (50, 'TC03', 85, N'Hoàn thành bài tập tốt');
+(1, 'TC01', 40, N'Tham gia kém'), (1, 'TC02', 50, N'Tập trung kém'), (1, 'TC03', 50, N'Hoàn thành bài tập kém'), (1, 'TC04', 3, N'Thảo luận kém'), (1, 'TC05', 40, N'Thụ động'), (1, 'TC06', 40, N'Làm việc nhóm kém'), (1, 'TC07', 40, N'Tôn trọng kém'), (1, 'TC08', 40, N'Kỷ luật kém'),
+(2, 'TC01', 55, N'Tham gia trung bình'), (2, 'TC02', 60, N'Tập trung trung bình'), (2, 'TC03', 60, N'Hoàn thành bài tập trung bình'), (2, 'TC04', 4, N'Thảo luận trung bình'), (2, 'TC05', 70, N'Trung bình'), (2, 'TC06', 60, N'Làm việc nhóm trung bình'), (2, 'TC07', 60, N'Tôn trọng trung bình'), (2, 'TC08', 60, N'Kỷ luật trung bình'),
+(3, 'TC01', 70, N'Tham gia khá'), (3, 'TC02', 75, N'Tập trung khá'), (3, 'TC03', 75, N'Hoàn thành bài tập khá'), (3, 'TC04', 6, N'Thảo luận khá'), (3, 'TC05', 70, N'Trung bình'), (3, 'TC06', 80, N'Làm việc nhóm khá'), (3, 'TC07', 80, N'Tôn trọng khá'), (3, 'TC08', 80, N'Kỷ luật khá'),
+(4, 'TC01', 85, N'Tham gia tốt'), (4, 'TC02', 80, N'Tập trung tốt'), (4, 'TC03', 80, N'Hoàn thành bài tập tốt'), (4, 'TC04', 8, N'Thảo luận tốt'), (4, 'TC05', 100, N'Chủ động'), (4, 'TC06', 90, N'Làm việc nhóm tốt'), (4, 'TC07', 90, N'Tôn trọng tốt'), (4, 'TC08', 90, N'Kỷ luật tốt'),
+(5, 'TC01', 95, N'Tham gia xuất sắc'), (5, 'TC02', 90, N'Tập trung xuất sắc'), (5, 'TC03', 90, N'Hoàn thành bài tập xuất sắc'), (5, 'TC04', 9, N'Thảo luận xuất sắc'), (5, 'TC05', 100, N'Rất chủ động'), (5, 'TC06', 95, N'Làm việc nhóm tốt'), (5, 'TC07', 95, N'Tôn trọng tốt'), (5, 'TC08', 95, N'Kỷ luật tốt'),
+(6, 'TC01', 45, N'Tham gia kém'), (6, 'TC02', 55, N'Tập trung kém'), (6, 'TC03', 55, N'Hoàn thành bài tập kém'), (6, 'TC04', 3, N'Thảo luận kém'), (6, 'TC05', 40, N'Thụ động'), (6, 'TC06', 40, N'Làm việc nhóm kém'), (6, 'TC07', 40, N'Tôn trọng kém'), (6, 'TC08', 40, N'Kỷ luật kém'),
+(7, 'TC01', 60, N'Tham gia trung bình'), (7, 'TC02', 65, N'Tập trung trung bình'), (7, 'TC03', 65, N'Hoàn thành bài tập trung bình'), (7, 'TC04', 5, N'Thảo luận trung bình'), (7, 'TC05', 70, N'Trung bình'), (7, 'TC06', 60, N'Làm việc nhóm trung bình'), (7, 'TC07', 60, N'Tôn trọng trung bình'), (7, 'TC08', 60, N'Kỷ luật trung bình'),
+(8, 'TC01', 75, N'Tham gia khá'), (8, 'TC02', 70, N'Tập trung khá'), (8, 'TC03', 70, N'Hoàn thành bài tập khá'), (8, 'TC04', 7, N'Thảo luận khá'), (8, 'TC05', 70, N'Trung bình'), (8, 'TC06', 80, N'Làm việc nhóm khá'), (8, 'TC07', 80, N'Tôn trọng khá'), (8, 'TC08', 80, N'Kỷ luật khá'),
+(9, 'TC01', 80, N'Tham gia tốt'), (9, 'TC02', 85, N'Tập trung tốt'), (9, 'TC03', 85, N'Hoàn thành bài tập tốt'), (9, 'TC04', 8, N'Thảo luận tốt'), (9, 'TC05', 100, N'Chủ động'), (9, 'TC06', 90, N'Làm việc nhóm tốt'), (9, 'TC07', 90, N'Tôn trọng tốt'), (9, 'TC08', 90, N'Kỷ luật tốt'),
+(10, 'TC01', 90, N'Tham gia xuất sắc'), (10, 'TC02', 95, N'Tập trung xuất sắc'), (10, 'TC03', 95, N'Hoàn thành bài tập xuất sắc'), (10, 'TC04', 9, N'Thảo luận xuất sắc'), (10, 'TC05', 100, N'Rất chủ động'), (10, 'TC06', 95, N'Làm việc nhóm tốt'), (10, 'TC07', 95, N'Tôn trọng tốt'), (10, 'TC08', 95, N'Kỷ luật tốt');
+
 
 -- 1. Liệt kê tất cả sinh viên trong hệ thống kèm thông tin lớp và ngành học
 SELECT sv.maSinhVien, sv.hoTen, sv.gioiTinh, sv.email, 
@@ -1577,3 +1658,82 @@ ORDER BY
         ELSE 2
     END,
     tb.DiemTrungBinhHocTap DESC, drl.diemCuoiCung DESC;
+--10. Liệt kê sinh viên có nguy cơ học tập yếu dựa trên điểm học phần và điểm rèn luyện
+WITH DiemHocPhanTrungBinh AS (
+    SELECT 
+        dkhp.maSinhVien, 
+        lhp.hocKy, 
+        lhp.namHoc, 
+        AVG(CASE WHEN dkhp.diemTong IS NOT NULL THEN dkhp.diemTong END) AS DiemHocPhanTrungBinh
+    FROM DangKyHocPhan dkhp
+    JOIN LopHocPhan lhp ON dkhp.maLHP = lhp.maLHP
+    WHERE dkhp.trangThai = N'Hoàn thành'
+    GROUP BY dkhp.maSinhVien, lhp.hocKy, lhp.namHoc
+)
+SELECT 
+    sv.maSinhVien, 
+    sv.hoTen, 
+    l.tenLop, 
+    n.tenNganh, 
+    dhptb.hocKy, 
+    dhptb.namHoc, 
+    CAST(dhptb.DiemHocPhanTrungBinh AS DECIMAL(4,2)) AS DiemHocPhanTrungBinh,
+    drl.diemCuoiCung AS DiemRenLuyen,
+    drl.xepLoai AS XepLoaiRenLuyen,
+    CASE 
+        WHEN dhptb.DiemHocPhanTrungBinh < 6.0 AND drl.diemCuoiCung < 50 THEN N'Rủi ro cao'
+        WHEN dhptb.DiemHocPhanTrungBinh < 6.0 OR drl.diemCuoiCung < 50 THEN N'Rủi ro trung bình'
+        ELSE N'Bình thường'
+    END AS MucDoRuiRo,
+    CASE 
+        WHEN dhptb.DiemHocPhanTrungBinh < 6.0 THEN N'Điểm học phần thấp'
+        WHEN drl.diemCuoiCung < 50 THEN N'Điểm rèn luyện thấp'
+        ELSE NULL
+    END AS LyDoRuiRo
+FROM SinhVien sv
+JOIN Lop l ON sv.maLop = l.maLop
+JOIN NganhHoc n ON sv.maNganh = n.maNganh
+LEFT JOIN DiemHocPhanTrungBinh dhptb ON sv.maSinhVien = dhptb.maSinhVien
+LEFT JOIN DiemRenLuyen drl ON sv.maSinhVien = drl.maSinhVien 
+    AND drl.hocKy = dhptb.hocKy 
+    AND drl.namHoc = dhptb.namHoc
+WHERE (dhptb.DiemHocPhanTrungBinh < 6.0 OR drl.diemCuoiCung < 50)
+    AND dhptb.hocKy = '1' 
+    AND dhptb.namHoc = '2023-2024'
+ORDER BY MucDoRuiRo DESC, dhptb.DiemHocPhanTrungBinh ASC, drl.diemCuoiCung ASC;
+--11. Phân tích tác động của vi phạm kỷ luật đến học bổng của sinh viên
+SELECT 
+    sv.maSinhVien, 
+    sv.hoTen, 
+    l.tenLop, 
+    n.tenNganh, 
+    drl.hocKy, 
+    drl.namHoc, 
+    COUNT(vp.maViPham) AS SoLuongViPham,
+    SUM(vp.diemTru) AS TongDiemTru,
+    drl.diemCuoiCung AS DiemRenLuyen,
+    drl.xepLoai AS XepLoaiRenLuyen,
+    drl.coHocBong,
+    drl.loaiHocBong,
+    drl.giaTriHocBong,
+    CASE 
+        WHEN drl.diemCuoiCung >= 90 AND SUM(vp.diemTru) = 0 THEN N'Đủ điều kiện học bổng Xuất sắc'
+        WHEN drl.diemCuoiCung >= 80 AND SUM(vp.diemTru) = 0 THEN N'Đủ điều kiện học bổng Khá'
+        WHEN SUM(vp.diemTru) > 0 THEN N'Không đủ điều kiện do vi phạm'
+        ELSE N'Không đủ điều kiện điểm rèn luyện'
+    END AS TrangThaiHocBong,
+    STRING_AGG(CASE WHEN vp.maViPham IS NOT NULL THEN vp.loaiViPham + ' (' + vp.mucDoViPham + ')' END, '; ') AS ChiTietViPham
+FROM SinhVien sv
+JOIN Lop l ON sv.maLop = l.maLop
+JOIN NganhHoc n ON sv.maNganh = n.maNganh
+JOIN DiemRenLuyen drl ON sv.maSinhVien = drl.maSinhVien
+LEFT JOIN ViPhamKyLuat vp ON sv.maSinhVien = vp.maSinhVien 
+    AND drl.hocKy = (SELECT lhp.hocKy FROM LopHocPhan lhp WHERE lhp.maLHP = vp.maLHP)
+    AND drl.namHoc = (SELECT lhp.namHoc FROM LopHocPhan lhp WHERE lhp.maLHP = vp.maLHP)
+WHERE drl.hocKy = '1' AND drl.namHoc = '2023-2024'
+GROUP BY sv.maSinhVien, sv.hoTen, l.tenLop, n.tenNganh, drl.hocKy, drl.namHoc, 
+         drl.diemCuoiCung, drl.xepLoai, drl.coHocBong, drl.loaiHocBong, drl.giaTriHocBong
+HAVING COUNT(vp.maViPham) > 0 OR drl.diemCuoiCung < 90
+ORDER BY TongDiemTru DESC, drl.diemCuoiCung ASC;
+
+
