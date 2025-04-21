@@ -1108,32 +1108,33 @@ INSERT INTO DangKyHocPhan (maSinhVien, maLHP, ngayDangKy, trangThai, diemGiuaKy,
 ('SV058', 'LHP09', '2024-08-20', N'Đã hủy', NULL, NULL, NULL, NULL),
 ('SV059', 'LHP10', '2025-01-20', N'Đã hủy', NULL, NULL, NULL, NULL),
 ('SV060', 'LHP11', '2025-01-20', N'Đã hủy', NULL, NULL, NULL, NULL);
-
+DELETE FROM BuoiHoc;
+SET IDENTITY_INSERT BuoiHoc ON;
 -- Thêm dữ liệu vào bảng BuoiHoc
-INSERT INTO BuoiHoc (maLHP, ngayHoc, gioBatDau, gioKetThuc, phongHoc, chuDe, trangThai) VALUES
-('LHP01', '2023-09-19', '07:30:00', '09:30:00', 'P101', N'Thiết kế nền móng', N'Đã diễn ra'),
-('LHP01', '2023-09-26', '07:30:00', '09:30:00', 'P101', N'Vật liệu xây dựng', N'Đã diễn ra'),
-('LHP02', '2023-09-20', '09:45:00', '11:45:00', 'P102', N'Nghiên cứu thị trường', N'Đã diễn ra'),
-('LHP02', '2023-09-27', '09:45:00', '11:45:00', 'P102', N'Quảng cáo', N'Đã diễn ra'),
-('LHP03', '2023-09-21', '13:30:00', '15:30:00', 'P103', N'Lập trình hướng đối tượng', N'Đã diễn ra'),
-('LHP03', '2023-09-28', '13:30:00', '15:30:00', 'P103', N'Xử lý ngoại lệ', N'Đã diễn ra'),
-('LHP04', '2024-02-19', '07:30:00', '09:30:00', 'P104', N'Hệ thống truyền động', N'Đã diễn ra'),
-('LHP04', '2024-02-26', '07:30:00', '09:30:00', 'P104', N'Bảo trì ô tô', N'Đã diễn ra'),
-('LHP05', '2024-02-20', '09:45:00', '11:45:00', 'P105', N'Vận tải logistics', N'Đã diễn ra'),
-('LHP05', '2024-02-27', '09:45:00', '11:45:00', 'P105', N'Tối ưu hóa chuỗi cung ứng', N'Đã diễn ra'),
-('LHP06', '2024-09-19', '07:30:00', '09:30:00', 'P106', N'Toán cao cấp - Ma trận', N'Chưa diễn ra'),
-('LHP07', '2025-02-20', '09:45:00', '11:45:00', 'P107', N'Vật lý - Điện từ', N'Chưa diễn ra'),
-('LHP08', '2024-09-25', '07:30:00', '09:30:00', 'P108', N'Nguyên lý mạch điện tử', N'Chưa diễn ra'),
-('LHP08', '2024-10-02', '07:30:00', '09:30:00', 'P108', N'Thiết kế mạch số', N'Chưa diễn ra'),
-('LHP09', '2024-09-26', '09:45:00', '11:45:00', 'P109', N'Xử lý nước thải', N'Chưa diễn ra'),
-('LHP09', '2024-10-03', '09:45:00', '11:45:00', 'P109', N'Quản lý chất thải rắn', N'Chưa diễn ra'),
-('LHP10', '2025-02-10', '13:30:00', '15:30:00', 'P110', N'Java nâng cao', N'Chưa diễn ra'),
-('LHP10', '2025-02-17', '13:30:00', '15:30:00', 'P110', N'Lập trình giao diện', N'Chưa diễn ra'),
-('LHP11', '2025-02-11', '07:30:00', '09:30:00', 'P111', N'Thiết kế cầu', N'Chưa diễn ra'),
-('LHP11', '2025-02-18', '07:30:00', '09:30:00', 'P111', N'Kết cấu bê tông', N'Chưa diễn ra'),
-('LHP08', '2024-09-18', '07:30:00', '09:30:00', 'P108', N'Giới thiệu mạch điện tử', N'Đã diễn ra'),
-('LHP09', '2024-09-19', '09:45:00', '11:45:00', 'P109', N'Tổng quan quản lý chất thải', N'Đã diễn ra');
-
+INSERT INTO BuoiHoc (maBuoi, maLHP, ngayHoc, gioBatDau, gioKetThuc, phongHoc, chuDe, trangThai) VALUES
+(1, 'LHP01', '2023-09-19', '07:30:00', '09:30:00', 'P101', N'Thiết kế nền móng', N'Đã diễn ra'),
+(2, 'LHP01', '2023-09-26', '07:30:00', '09:30:00', 'P101', N'Vật liệu xây dựng', N'Đã diễn ra'),
+(3, 'LHP02', '2023-09-20', '09:45:00', '11:45:00', 'P102', N'Nghiên cứu thị trường', N'Đã diễn ra'),
+(4, 'LHP02', '2023-09-27', '09:45:00', '11:45:00', 'P102', N'Quảng cáo', N'Đã diễn ra'),
+(5, 'LHP03', '2023-09-21', '13:30:00', '15:30:00', 'P103', N'Lập trình hướng đối tượng', N'Đã diễn ra'),
+(6, 'LHP03', '2023-09-28', '13:30:00', '15:30:00', 'P103', N'Xử lý ngoại lệ', N'Đã diễn ra'),
+(7, 'LHP04', '2024-02-19', '07:30:00', '09:30:00', 'P104', N'Hệ thống truyền động', N'Đã diễn ra'),
+(8, 'LHP04', '2024-02-26', '07:30:00', '09:30:00', 'P104', N'Bảo trì ô tô', N'Đã diễn ra'),
+(9, 'LHP05', '2024-02-20', '09:45:00', '11:45:00', 'P105', N'Vận tải logistics', N'Đã diễn ra'),
+(10, 'LHP05', '2024-02-27', '09:45:00', '11:45:00', 'P105', N'Tối ưu hóa chuỗi cung ứng', N'Đã diễn ra'),
+(11, 'LHP06', '2024-09-19', '07:30:00', '09:30:00', 'P106', N'Toán cao cấp - Ma trận', N'Chưa diễn ra'),
+(12, 'LHP07', '2025-02-20', '09:45:00', '11:45:00', 'P107', N'Vật lý - Điện từ', N'Chưa diễn ra'),
+(13, 'LHP08', '2024-09-25', '07:30:00', '09:30:00', 'P108', N'Nguyên lý mạch điện tử', N'Chưa diễn ra'),
+(14, 'LHP08', '2024-10-02', '07:30:00', '09:30:00', 'P108', N'Thiết kế mạch số', N'Chưa diễn ra'),
+(15, 'LHP09', '2024-09-26', '09:45:00', '11:45:00', 'P109', N'Xử lý nước thải', N'Chưa diễn ra'),
+(16, 'LHP09', '2024-10-03', '09:45:00', '11:45:00', 'P109', N'Quản lý chất thải rắn', N'Chưa diễn ra'),
+(17, 'LHP10', '2025-02-10', '13:30:00', '15:30:00', 'P110', N'Java nâng cao', N'Chưa diễn ra'),
+(18, 'LHP10', '2025-02-17', '13:30:00', '15:30:00', 'P110', N'Lập trình giao diện', N'Chưa diễn ra'),
+(19, 'LHP11', '2025-02-11', '07:30:00', '09:30:00', 'P111', N'Thiết kế cầu', N'Chưa diễn ra'),
+(20, 'LHP11', '2025-02-18', '07:30:00', '09:30:00', 'P111', N'Kết cấu bê tông', N'Chưa diễn ra'),
+(21, 'LHP08', '2024-09-18', '07:30:00', '09:30:00', 'P108', N'Giới thiệu mạch điện tử', N'Đã diễn ra'),
+(22, 'LHP09', '2024-09-19', '09:45:00', '11:45:00', 'P109', N'Tổng quan quản lý chất thải', N'Đã diễn ra');
+SET IDENTITY_INSERT BuoiHoc OFF;
 -- Thêm dữ liệu vào bảng DiemDanh
 INSERT INTO DiemDanh (maSinhVien, maBuoi, trangThai, thoiGianGhi, ghiChu) VALUES
 -- LHP01 (maBuoi 1, 2)
@@ -1239,8 +1240,13 @@ INSERT INTO DiemDanh (maSinhVien, maBuoi, trangThai, thoiGianGhi, ghiChu) VALUES
 ('SV054', 22, N'Có mặt', '2024-09-19 09:45:00', NULL),
 ('SV055', 22, N'Có mặt', '2024-09-19 09:45:00', NULL),
 ('SV056', 22, N'Có mặt', '2024-09-19 09:45:00', NULL);
-
+DELETE FROM DiemDanh;
 -- Thêm dữ liệu vào bảng DanhGiaThaiDoHocTap
+-- Xóa dữ liệu cũ trong ChiTietDanhGia và DanhGiaThaiDoHocTap
+DELETE FROM ChiTietDanhGia;
+DELETE FROM DanhGiaThaiDoHocTap;
+
+-- Chèn dữ liệu vào DanhGiaThaiDoHocTap
 INSERT INTO DanhGiaThaiDoHocTap (maSinhVien, maLHP, ngayDanhGia, nguoiDanhGia, tyLeThamGia, mucDoTapTrung, hoanThanhBaiTap, thamGiaThaoLuan, tinhChuDong, lamViecNhom, tonTrong, ghiChu) VALUES
 ('SV001', 'LHP01', '2023-12-10', 'GV01', 40, N'Kém', 50, 3, N'Thụ động', N'Kém', N'Kém', N'Cần cải thiện'),
 ('SV002', 'LHP01', '2023-12-10', 'GV01', 55, N'Trung bình', 60, 4, N'Trung bình', N'Trung bình', N'Trung bình', N'Ổn định'),
@@ -1302,7 +1308,6 @@ INSERT INTO DanhGiaThaiDoHocTap (maSinhVien, maLHP, ngayDanhGia, nguoiDanhGia, t
 ('SV058', 'LHP05', '2024-05-10', 'GV07', 80, N'Tốt', 85, 8, N'Chủ động', N'Tốt', N'Tốt', N'Tích cực'),
 ('SV059', 'LHP03', '2023-12-10', 'GV04', 60, N'Trung bình', 65, 5, N'Trung bình', N'Trung bình', N'Trung bình', N'Ổn định'),
 ('SV060', 'LHP05', '2024-05-10', 'GV07', 90, N'Xuất sắc', 95, 9, N'Chủ động', N'Tốt', N'Tốt', N'Rất xuất sắc');
-
 -- Thêm dữ liệu vào bảng ViPhamKyLuat
 INSERT INTO ViPhamKyLuat (maSinhVien, maLHP, ngayViPham, loaiViPham, mucDoViPham, bienPhapXuLy, diemTru, nguoiXuLy, trangThai, ghiChu) VALUES
 ('SV001', 'LHP01', '2023-11-20', N'Đi muộn nhiều lần', N'Nhẹ', N'Nhắc nhở', 5, 'GV01', N'Đã xử lý', N'Cam kết không tái phạm'),
@@ -1380,17 +1385,69 @@ INSERT INTO DiemRenLuyen (maSinhVien, hocKy, namHoc, diemTuDanhGia, diemLop, die
 ('SV060', '2', '2023-2024', 95, 90, 92, 82, N'Khá', 'GV07', '2024-05-20', 0, NULL, NULL, N'Có vi phạm');
 
 -- Thêm dữ liệu vào bảng ChiTietDanhGia
+-- Thêm dữ liệu vào bảng ChiTietDanhGia cho tất cả bản ghi trong DanhGiaThaiDoHocTap
 INSERT INTO ChiTietDanhGia (maDanhGia, maTieuChi, diem, ghiChu) VALUES
 (1, 'TC01', 40, N'Tham gia kém'), (1, 'TC02', 50, N'Tập trung kém'), (1, 'TC03', 50, N'Hoàn thành bài tập kém'), (1, 'TC04', 3, N'Thảo luận kém'), (1, 'TC05', 40, N'Thụ động'), (1, 'TC06', 40, N'Làm việc nhóm kém'), (1, 'TC07', 40, N'Tôn trọng kém'), (1, 'TC08', 40, N'Kỷ luật kém'),
 (2, 'TC01', 55, N'Tham gia trung bình'), (2, 'TC02', 60, N'Tập trung trung bình'), (2, 'TC03', 60, N'Hoàn thành bài tập trung bình'), (2, 'TC04', 4, N'Thảo luận trung bình'), (2, 'TC05', 70, N'Trung bình'), (2, 'TC06', 60, N'Làm việc nhóm trung bình'), (2, 'TC07', 60, N'Tôn trọng trung bình'), (2, 'TC08', 60, N'Kỷ luật trung bình'),
 (3, 'TC01', 70, N'Tham gia khá'), (3, 'TC02', 75, N'Tập trung khá'), (3, 'TC03', 75, N'Hoàn thành bài tập khá'), (3, 'TC04', 6, N'Thảo luận khá'), (3, 'TC05', 70, N'Trung bình'), (3, 'TC06', 80, N'Làm việc nhóm khá'), (3, 'TC07', 80, N'Tôn trọng khá'), (3, 'TC08', 80, N'Kỷ luật khá'),
 (4, 'TC01', 85, N'Tham gia tốt'), (4, 'TC02', 80, N'Tập trung tốt'), (4, 'TC03', 80, N'Hoàn thành bài tập tốt'), (4, 'TC04', 8, N'Thảo luận tốt'), (4, 'TC05', 100, N'Chủ động'), (4, 'TC06', 90, N'Làm việc nhóm tốt'), (4, 'TC07', 90, N'Tôn trọng tốt'), (4, 'TC08', 90, N'Kỷ luật tốt'),
 (5, 'TC01', 95, N'Tham gia xuất sắc'), (5, 'TC02', 90, N'Tập trung xuất sắc'), (5, 'TC03', 90, N'Hoàn thành bài tập xuất sắc'), (5, 'TC04', 9, N'Thảo luận xuất sắc'), (5, 'TC05', 100, N'Rất chủ động'), (5, 'TC06', 95, N'Làm việc nhóm tốt'), (5, 'TC07', 95, N'Tôn trọng tốt'), (5, 'TC08', 95, N'Kỷ luật tốt'),
+(6, 'TC01', 60, N'Tham gia trung bình'), (6, 'TC02', 65, N'Tập trung trung bình'), (6, 'TC03', 65, N'Hoàn thành bài tập trung bình'), (6, 'TC04', 5, N'Thảo luận trung bình'), (6, 'TC05', 70, N'Trung bình'), (6, 'TC06', 60, N'Làm việc nhóm trung bình'), (6, 'TC07', 60, N'Tôn trọng trung bình'), (6, 'TC08', 60, N'Kỷ luật trung bình'),
+(7, 'TC01', 80, N'Tham gia tốt'), (7, 'TC02', 85, N'Tập trung tốt'), (7, 'TC03', 85, N'Hoàn thành bài tập tốt'), (7, 'TC04', 8, N'Thảo luận tốt'), (7, 'TC05', 100, N'Chủ động'), (7, 'TC06', 90, N'Làm việc nhóm tốt'), (7, 'TC07', 90, N'Tôn trọng tốt'), (7, 'TC08', 90, N'Kỷ luật tốt'),
+(8, 'TC01', 90, N'Tham gia xuất sắc'), (8, 'TC02', 95, N'Tập trung xuất sắc'), (8, 'TC03', 95, N'Hoàn thành bài tập xuất sắc'), (8, 'TC04', 9, N'Thảo luận xuất sắc'), (8, 'TC05', 100, N'Rất chủ động'), (8, 'TC06', 90, N'Làm việc nhóm tốt'), (8, 'TC07', 90, N'Tôn trọng tốt'), (8, 'TC08', 90, N'Kỷ luật tốt'),
+(9, 'TC01', 45, N'Tham gia kém'), (9, 'TC02', 50, N'Tập trung kém'), (9, 'TC03', 55, N'Hoàn thành bài tập kém'), (9, 'TC04', 3, N'Thảo luận kém'), (9, 'TC05', 40, N'Thụ động'), (9, 'TC06', 40, N'Làm việc nhóm kém'), (9, 'TC07', 40, N'Tôn trọng kém'), (9, 'TC08', 40, N'Kỷ luật kém'),
+(10, 'TC01', 60, N'Tham gia trung bình'), (10, 'TC02', 65, N'Tập trung trung bình'), (10, 'TC03', 65, N'Hoàn thành bài tập trung bình'), (10, 'TC04', 5, N'Thảo luận trung bình'), (10, 'TC05', 70, N'Trung bình'), (10, 'TC06', 60, N'Làm việc nhóm trung bình'), (10, 'TC07', 60, N'Tôn trọng trung bình'), (10, 'TC08', 60, N'Kỷ luật trung bình'),
+(11, 'TC01', 75, N'Tham gia khá'), (11, 'TC02', 75, N'Tập trung khá'), (11, 'TC03', 70, N'Hoàn thành bài tập khá'), (11, 'TC04', 7, N'Thảo luận khá'), (11, 'TC05', 70, N'Trung bình'), (11, 'TC06', 80, N'Làm việc nhóm khá'), (11, 'TC07', 80, N'Tôn trọng khá'), (11, 'TC08', 80, N'Kỷ luật khá'),
+(12, 'TC01', 80, N'Tham gia tốt'), (12, 'TC02', 85, N'Tập trung tốt'), (12, 'TC03', 85, N'Hoàn thành bài tập tốt'), (12, 'TC04', 8, N'Thảo luận tốt'), (12, 'TC05', 100, N'Chủ động'), (12, 'TC06', 90, N'Làm việc nhóm tốt'), (12, 'TC07', 90, N'Tôn trọng tốt'), (12, 'TC08', 90, N'Kỷ luật tốt'),
+(13, 'TC01', 90, N'Tham gia xuất sắc'), (13, 'TC02', 95, N'Tập trung xuất sắc'), (13, 'TC03', 95, N'Hoàn thành bài tập xuất sắc'), (13, 'TC04', 9, N'Thảo luận xuất sắc'), (13, 'TC05', 100, N'Rất chủ động'), (13, 'TC06', 90, N'Làm việc nhóm tốt'), (13, 'TC07', 90, N'Tôn trọng tốt'), (13, 'TC08', 90, N'Kỷ luật tốt'),
+(14, 'TC01', 50, N'Tham gia trung bình'), (14, 'TC02', 65, N'Tập trung trung bình'), (14, 'TC03', 60, N'Hoàn thành bài tập trung bình'), (14, 'TC04', 4, N'Thảo luận trung bình'), (14, 'TC05', 70, N'Trung bình'), (14, 'TC06', 60, N'Làm việc nhóm trung bình'), (14, 'TC07', 60, N'Tôn trọng trung bình'), (14, 'TC08', 60, N'Kỷ luật trung bình'),
+(15, 'TC01', 85, N'Tham gia tốt'), (15, 'TC02', 85, N'Tập trung tốt'), (15, 'TC03', 80, N'Hoàn thành bài tập tốt'), (15, 'TC04', 8, N'Thảo luận tốt'), (15, 'TC05', 100, N'Chủ động'), (15, 'TC06', 90, N'Làm việc nhóm tốt'), (15, 'TC07', 90, N'Tôn trọng tốt'), (15, 'TC08', 90, N'Kỷ luật tốt'),
+(16, 'TC01', 95, N'Tham gia xuất sắc'), (16, 'TC02', 95, N'Tập trung xuất sắc'), (16, 'TC03', 90, N'Hoàn thành bài tập xuất sắc'), (16, 'TC04', 9, N'Thảo luận xuất sắc'), (16, 'TC05', 100, N'Rất chủ động'), (16, 'TC06', 90, N'Làm việc nhóm tốt'), (16, 'TC07', 90, N'Tôn trọng tốt'), (16, 'TC08', 90, N'Kỷ luật tốt'),
+(17, 'TC01', 50, N'Tham gia trung bình'), (17, 'TC02', 65, N'Tập trung trung bình'), (17, 'TC03', 60, N'Hoàn thành bài tập trung bình'), (17, 'TC04', 4, N'Thảo luận trung bình'), (17, 'TC05', 70, N'Trung bình'), (17, 'TC06', 60, N'Làm việc nhóm trung bình'), (17, 'TC07', 60, N'Tôn trọng trung bình'), (17, 'TC08', 60, N'Kỷ luật trung bình'),
+(18, 'TC01', 65, N'Tham gia khá'), (18, 'TC02', 75, N'Tập trung khá'), (18, 'TC03', 70, N'Hoàn thành bài tập khá'), (18, 'TC04', 6, N'Thảo luận khá'), (18, 'TC05', 70, N'Trung bình'), (18, 'TC06', 80, N'Làm việc nhóm khá'), (18, 'TC07', 80, N'Tôn trọng khá'), (18, 'TC08', 80, N'Kỷ luật khá'),
+(19, 'TC01', 80, N'Tham gia tốt'), (19, 'TC02', 85, N'Tập trung tốt'), (19, 'TC03', 85, N'Hoàn thành bài tập tốt'), (19, 'TC04', 8, N'Thảo luận tốt'), (19, 'TC05', 100, N'Chủ động'), (19, 'TC06', 90, N'Làm việc nhóm tốt'), (19, 'TC07', 90, N'Tôn trọng tốt'), (19, 'TC08', 90, N'Kỷ luật tốt'),
+(20, 'TC01', 85, N'Tham gia xuất sắc'), (20, 'TC02', 95, N'Tập trung xuất sắc'), (20, 'TC03', 90, N'Hoàn thành bài tập xuất sắc'), (20, 'TC04', 9, N'Thảo luận xuất sắc'), (20, 'TC05', 100, N'Rất chủ động'), (20, 'TC06', 90, N'Làm việc nhóm tốt'), (20, 'TC07', 90, N'Tôn trọng tốt'), (20, 'TC08', 90, N'Kỷ luật tốt'),
+(21, 'TC01', 90, N'Tham gia xuất sắc'), (21, 'TC02', 95, N'Tập trung xuất sắc'), (21, 'TC03', 95, N'Hoàn thành bài tập xuất sắc'), (21, 'TC04', 9, N'Thảo luận xuất sắc'), (21, 'TC05', 100, N'Rất chủ động'), (21, 'TC06', 90, N'Làm việc nhóm tốt'), (21, 'TC07', 90, N'Tôn trọng tốt'), (21, 'TC08', 90, N'Kỷ luật tốt'),
+(22, 'TC01', 60, N'Tham gia trung bình'), (22, 'TC02', 65, N'Tập trung trung bình'), (22, 'TC03', 65, N'Hoàn thành bài tập trung bình'), (22, 'TC04', 5, N'Thảo luận trung bình'), (22, 'TC05', 70, N'Trung bình'), (22, 'TC06', 60, N'Làm việc nhóm trung bình'), (22, 'TC07', 60, N'Tôn trọng trung bình'), (22, 'TC08', 60, N'Kỷ luật trung bình'),
+(23, 'TC01', 75, N'Tham gia khá'), (23, 'TC02', 75, N'Tập trung khá'), (23, 'TC03', 70, N'Hoàn thành bài tập khá'), (23, 'TC04', 7, N'Thảo luận khá'), (23, 'TC05', 70, N'Trung bình'), (23, 'TC06', 80, N'Làm việc nhóm khá'), (23, 'TC07', 80, N'Tôn trọng khá'), (23, 'TC08', 80, N'Kỷ luật khá'),
+(24, 'TC01', 80, N'Tham gia tốt'), (24, 'TC02', 85, N'Tập trung tốt'), (24, 'TC03', 85, N'Hoàn thành bài tập tốt'), (24, 'TC04', 8, N'Thảo luận tốt'), (24, 'TC05', 100, N'Chủ động'), (24, 'TC06', 90, N'Làm việc nhóm tốt'), (24, 'TC07', 90, N'Tôn trọng tốt'), (24, 'TC08', 90, N'Kỷ luật tốt'),
+(25, 'TC01', 95, N'Tham gia xuất sắc'), (25, 'TC02', 95, N'Tập trung xuất sắc'), (25, 'TC03', 90, N'Hoàn thành bài tập xuất sắc'), (25, 'TC04', 9, N'Thảo luận xuất sắc'), (25, 'TC05', 100, N'Rất chủ động'), (25, 'TC06', 90, N'Làm việc nhóm tốt'), (25, 'TC07', 90, N'Tôn trọng tốt'), (25, 'TC08', 90, N'Kỷ luật tốt'),
+(26, 'TC01', 80, N'Tham gia khá'), (26, 'TC02', 75, N'Tập trung khá'), (26, 'TC03', 85, N'Hoàn thành bài tập khá'), (26, 'TC04', 7, N'Thảo luận khá'), (26, 'TC05', 70, N'Trung bình'), (26, 'TC06', 80, N'Làm việc nhóm khá'), (26, 'TC07', 80, N'Tôn trọng khá'), (26, 'TC08', 80, N'Kỷ luật khá'),
+(27, 'TC01', 85, N'Tham gia tốt'), (27, 'TC02', 85, N'Tập trung tốt'), (27, 'TC03', 80, N'Hoàn thành bài tập tốt'), (27, 'TC04', 8, N'Thảo luận tốt'), (27, 'TC05', 100, N'Chủ động'), (27, 'TC06', 90, N'Làm việc nhóm tốt'), (27, 'TC07', 90, N'Tôn trọng tốt'), (27, 'TC08', 90, N'Kỷ luật tốt'),
+(28, 'TC01', 60, N'Tham gia kém'), (28, 'TC02', 50, N'Tập trung kém'), (28, 'TC03', 70, N'Hoàn thành bài tập kém'), (28, 'TC04', 5, N'Thảo luận kém'), (28, 'TC05', 40, N'Thụ động'), (28, 'TC06', 40, N'Làm việc nhóm kém'), (28, 'TC07', 60, N'Tôn trọng trung bình'), (28, 'TC08', 60, N'Kỷ luật trung bình'),
+(29, 'TC01', 90, N'Tham gia tốt'), (29, 'TC02', 85, N'Tập trung tốt'), (29, 'TC03', 85, N'Hoàn thành bài tập tốt'), (29, 'TC04', 8, N'Thảo luận tốt'), (29, 'TC05', 100, N'Chủ động'), (29, 'TC06', 90, N'Làm việc nhóm tốt'), (29, 'TC07', 90, N'Tôn trọng tốt'), (29, 'TC08', 90, N'Kỷ luật tốt'),
+(30, 'TC01', 50, N'Tham gia trung bình'), (30, 'TC02', 65, N'Tập trung trung bình'), (30, 'TC03', 60, N'Hoàn thành bài tập trung bình'), (30, 'TC04', 4, N'Thảo luận trung bình'), (30, 'TC05', 70, N'Trung bình'), (30, 'TC06', 60, N'Làm việc nhóm trung bình'), (30, 'TC07', 60, N'Tôn trọng trung bình'), (30, 'TC08', 60, N'Kỷ luật trung bình'),
+(31, 'TC01', 75, N'Tham gia khá'), (31, 'TC02', 75, N'Tập trung khá'), (31, 'TC03', 70, N'Hoàn thành bài tập khá'), (31, 'TC04', 7, N'Thảo luận khá'), (31, 'TC05', 70, N'Trung bình'), (31, 'TC06', 80, N'Làm việc nhóm khá'), (31, 'TC07', 80, N'Tôn trọng khá'), (31, 'TC08', 80, N'Kỷ luật khá'),
+(32, 'TC01', 80, N'Tham gia tốt'), (32, 'TC02', 85, N'Tập trung tốt'), (32, 'TC03', 85, N'Hoàn thành bài tập tốt'), (32, 'TC04', 8, N'Thảo luận tốt'), (32, 'TC05', 100, N'Chủ động'), (32, 'TC06', 90, N'Làm việc nhóm tốt'), (32, 'TC07', 90, N'Tôn trọng tốt'), (32, 'TC08', 90, N'Kỷ luật tốt'),
+(33, 'TC01', 95, N'Tham gia xuất sắc'), (33, 'TC02', 95, N'Tập trung xuất sắc'), (33, 'TC03', 90, N'Hoàn thành bài tập xuất sắc'), (33, 'TC04', 9, N'Thảo luận xuất sắc'), (33, 'TC05', 100, N'Rất chủ động'), (33, 'TC06', 90, N'Làm việc nhóm tốt'), (33, 'TC07', 90, N'Tôn trọng tốt'), (33, 'TC08', 90, N'Kỷ luật tốt'),
+(34, 'TC01', 85, N'Tham gia khá'), (34, 'TC02', 75, N'Tập trung khá'), (34, 'TC03', 80, N'Hoàn thành bài tập khá'), (34, 'TC04', 7, N'Thảo luận khá'), (34, 'TC05', 70, N'Trung bình'), (34, 'TC06', 80, N'Làm việc nhóm khá'), (34, 'TC07', 80, N'Tôn trọng khá'), (34, 'TC08', 80, N'Kỷ luật khá'),
+(35, 'TC01', 70, N'Tham gia trung bình'), (35, 'TC02', 65, N'Tập trung trung bình'), (35, 'TC03', 75, N'Hoàn thành bài tập trung bình'), (35, 'TC04', 6, N'Thảo luận trung bình'), (35, 'TC05', 40, N'Thụ động'), (35, 'TC06', 60, N'Làm việc nhóm trung bình'), (35, 'TC07', 60, N'Tôn trọng trung bình'), (35, 'TC08', 60, N'Kỷ luật trung bình'),
+(36, 'TC01', 90, N'Tham gia tốt'), (36, 'TC02', 85, N'Tập trung tốt'), (36, 'TC03', 85, N'Hoàn thành bài tập tốt'), (36, 'TC04', 8, N'Thảo luận tốt'), (36, 'TC05', 100, N'Chủ động'), (36, 'TC06', 90, N'Làm việc nhóm tốt'), (36, 'TC07', 90, N'Tôn trọng tốt'), (36, 'TC08', 90, N'Kỷ luật tốt'),
+(37, 'TC01', 85, N'Tham gia khá'), (37, 'TC02', 75, N'Tập trung khá'), (37, 'TC03', 80, N'Hoàn thành bài tập khá'), (37, 'TC04', 7, N'Thảo luận khá'), (37, 'TC05', 70, N'Trung bình'), (37, 'TC06', 80, N'Làm việc nhóm khá'), (37, 'TC07', 80, N'Tôn trọng khá'), (37, 'TC08', 80, N'Kỷ luật khá'),
+(38, 'TC01', 60, N'Tham gia kém'), (38, 'TC02', 50, N'Tập trung kém'), (38, 'TC03', 70, N'Hoàn thành bài tập kém'), (38, 'TC04', 5, N'Thảo luận kém'), (38, 'TC05', 40, N'Thụ động'), (38, 'TC06', 40, N'Làm việc nhóm kém'), (38, 'TC07', 60, N'Tôn trọng trung bình'), (38, 'TC08', 60, N'Kỷ luật trung bình'),
+(39, 'TC01', 75, N'Tham gia khá'), (39, 'TC02', 75, N'Tập trung khá'), (39, 'TC03', 70, N'Hoàn thành bài tập khá'), (39, 'TC04', 7, N'Thảo luận khá'), (39, 'TC05', 70, N'Trung bình'), (39, 'TC06', 80, N'Làm việc nhóm khá'), (39, 'TC07', 80, N'Tôn trọng khá'), (39, 'TC08', 80, N'Kỷ luật khá'),
+(40, 'TC01', 80, N'Tham gia tốt'), (40, 'TC02', 85, N'Tập trung tốt'), (40, 'TC03', 85, N'Hoàn thành bài tập tốt'), (40, 'TC04', 8, N'Thảo luận tốt'), (40, 'TC05', 100, N'Chủ động'), (40, 'TC06', 90, N'Làm việc nhóm tốt'), (40, 'TC07', 90, N'Tôn trọng tốt'), (40, 'TC08', 90, N'Kỷ luật tốt'),
 (41, 'TC01', 90, N'Tham gia xuất sắc'), (41, 'TC02', 95, N'Tập trung xuất sắc'), (41, 'TC03', 95, N'Hoàn thành bài tập xuất sắc'), (41, 'TC04', 9, N'Thảo luận xuất sắc'), (41, 'TC05', 100, N'Rất chủ động'), (41, 'TC06', 95, N'Làm việc nhóm tốt'), (41, 'TC07', 95, N'Tôn trọng tốt'), (41, 'TC08', 95, N'Kỷ luật tốt'),
 (42, 'TC01', 80, N'Tham gia tốt'), (42, 'TC02', 85, N'Tập trung tốt'), (42, 'TC03', 85, N'Hoàn thành bài tập tốt'), (42, 'TC04', 8, N'Thảo luận tốt'), (42, 'TC05', 100, N'Chủ động'), (42, 'TC06', 90, N'Làm việc nhóm tốt'), (42, 'TC07', 90, N'Tôn trọng tốt'), (42, 'TC08', 90, N'Kỷ luật tốt'),
 (43, 'TC01', 40, N'Tham gia kém'), (43, 'TC02', 50, N'Tập trung kém'), (43, 'TC03', 50, N'Hoàn thành bài tập kém'), (43, 'TC04', 3, N'Thảo luận kém'), (43, 'TC05', 40, N'Thụ động'), (43, 'TC06', 40, N'Làm việc nhóm kém'), (43, 'TC07', 40, N'Tôn trọng kém'), (43, 'TC08', 40, N'Kỷ luật kém'),
 (44, 'TC01', 75, N'Tham gia khá'), (44, 'TC02', 70, N'Tập trung khá'), (44, 'TC03', 70, N'Hoàn thành bài tập khá'), (44, 'TC04', 7, N'Thảo luận khá'), (44, 'TC05', 70, N'Trung bình'), (44, 'TC06', 80, N'Làm việc nhóm khá'), (44, 'TC07', 80, N'Tôn trọng khá'), (44, 'TC08', 80, N'Kỷ luật khá'),
-(45, 'TC01', 60, N'Tham gia trung bình'), (45, 'TC02', 65, N'Tập trung trung bình'), (45, 'TC03', 65, N'Hoàn thành bài tập trung bình'), (45, 'TC04', 5, N'Thảo luận trung bình'), (45, 'TC05', 70, N'Trung bình'), (45, 'TC06', 60, N'Làm việc nhóm trung bình'), (45, 'TC07', 60, N'Tôn trọng trung bình'), (45, 'TC08', 60, N'Kỷ luật trung bình');
+(45, 'TC01', 60, N'Tham gia trung bình'), (45, 'TC02', 65, N'Tập trung trung bình'), (45, 'TC03', 65, N'Hoàn thành bài tập trung bình'), (45, 'TC04', 5, N'Thảo luận trung bình'), (45, 'TC05', 70, N'Trung bình'), (45, 'TC06', 60, N'Làm việc nhóm trung bình'), (45, 'TC07', 60, N'Tôn trọng trung bình'), (45, 'TC08', 60, N'Kỷ luật trung bình'),
+(46, 'TC01', 85, N'Tham gia tốt'), (46, 'TC02', 85, N'Tập trung tốt'), (46, 'TC03', 80, N'Hoàn thành bài tập tốt'), (46, 'TC04', 8, N'Thảo luận tốt'), (46, 'TC05', 100, N'Chủ động'), (46, 'TC06', 90, N'Làm việc nhóm tốt'), (46, 'TC07', 90, N'Tôn trọng tốt'), (46, 'TC08', 90, N'Kỷ luật tốt'),
+(47, 'TC01', 95, N'Tham gia xuất sắc'), (47, 'TC02', 95, N'Tập trung xuất sắc'), (47, 'TC03', 90, N'Hoàn thành bài tập xuất sắc'), (47, 'TC04', 9, N'Thảo luận xuất sắc'), (47, 'TC05', 100, N'Rất chủ động'), (47, 'TC06', 90, N'Làm việc nhóm tốt'), (47, 'TC07', 90, N'Tôn trọng tốt'), (47, 'TC08', 90, N'Kỷ luật tốt'),
+(48, 'TC01', 70, N'Tham gia khá'), (48, 'TC02', 75, N'Tập trung khá'), (48, 'TC03', 75, N'Hoàn thành bài tập khá'), (48, 'TC04', 6, N'Thảo luận khá'), (48, 'TC05', 70, N'Trung bình'), (48, 'TC06', 80, N'Làm việc nhóm khá'), (48, 'TC07', 80, N'Tôn trọng khá'), (48, 'TC08', 80, N'Kỷ luật khá'),
+(49, 'TC01', 90, N'Tham gia xuất sắc'), (49, 'TC02', 95, N'Tập trung xuất sắc'), (49, 'TC03', 95, N'Hoàn thành bài tập xuất sắc'), (49, 'TC04', 9, N'Thảo luận xuất sắc'), (49, 'TC05', 100, N'Rất chủ động'), (49, 'TC06', 90, N'Làm việc nhóm tốt'), (49, 'TC07', 90, N'Tôn trọng tốt'), (49, 'TC08', 90, N'Kỷ luật tốt'),
+(50, 'TC01', 80, N'Tham gia tốt'), (50, 'TC02', 85, N'Tập trung tốt'), (50, 'TC03', 85, N'Hoàn thành bài tập tốt'), (50, 'TC04', 8, N'Thảo luận tốt'), (50, 'TC05', 100, N'Chủ động'), (50, 'TC06', 90, N'Làm việc nhóm tốt'), (50, 'TC07', 90, N'Tôn trọng tốt'), (50, 'TC08', 90, N'Kỷ luật tốt'),
+(51, 'TC01', 40, N'Tham gia kém'), (51, 'TC02', 50, N'Tập trung kém'), (51, 'TC03', 50, N'Hoàn thành bài tập kém'), (51, 'TC04', 3, N'Thảo luận kém'), (51, 'TC05', 40, N'Thụ động'), (51, 'TC06', 40, N'Làm việc nhóm kém'), (51, 'TC07', 40, N'Tôn trọng kém'), (51, 'TC08', 40, N'Kỷ luật kém'),
+(52, 'TC01', 75, N'Tham gia khá'), (52, 'TC02', 75, N'Tập trung khá'), (52, 'TC03', 70, N'Hoàn thành bài tập khá'), (52, 'TC04', 7, N'Thảo luận khá'), (52, 'TC05', 70, N'Trung bình'), (52, 'TC06', 80, N'Làm việc nhóm khá'), (52, 'TC07', 80, N'Tôn trọng khá'), (52, 'TC08', 80, N'Kỷ luật khá'),
+(53, 'TC01', 60, N'Tham gia trung bình'), (53, 'TC02', 65, N'Tập trung trung bình'), (53, 'TC03', 65, N'Hoàn thành bài tập trung bình'), (53, 'TC04', 5, N'Thảo luận trung bình'), (53, 'TC05', 70, N'Trung bình'), (53, 'TC06', 60, N'Làm việc nhóm trung bình'), (53, 'TC07', 60, N'Tôn trọng trung bình'), (53, 'TC08', 60, N'Kỷ luật trung bình'),
+(54, 'TC01', 85, N'Tham gia tốt'), (54, 'TC02', 85, N'Tập trung tốt'), (54, 'TC03', 80, N'Hoàn thành bài tập tốt'), (54, 'TC04', 8, N'Thảo luận tốt'), (54, 'TC05', 100, N'Chủ động'), (54, 'TC06', 90, N'Làm việc nhóm tốt'), (54, 'TC07', 90, N'Tôn trọng tốt'), (54, 'TC08', 90, N'Kỷ luật tốt'),
+(55, 'TC01', 95, N'Tham gia xuất sắc'), (55, 'TC02', 95, N'Tập trung xuất sắc'), (55, 'TC03', 90, N'Hoàn thành bài tập xuất sắc'), (55, 'TC04', 9, N'Thảo luận xuất sắc'), (55, 'TC05', 100, N'Rất chủ động'), (55, 'TC06', 90, N'Làm việc nhóm tốt'), (55, 'TC07', 90, N'Tôn trọng tốt'), (55, 'TC08', 90, N'Kỷ luật tốt'),
+(56, 'TC01', 70, N'Tham gia khá'), (56, 'TC02', 75, N'Tập trung khá'), (56, 'TC03', 75, N'Hoàn thành bài tập khá'), (56, 'TC04', 6, N'Thảo luận khá'), (56, 'TC05', 70, N'Trung bình'), (56, 'TC06', 80, N'Làm việc nhóm khá'), (56, 'TC07', 80, N'Tôn trọng khá'), (56, 'TC08', 80, N'Kỷ luật khá'),
+(57, 'TC01', 70, N'Tham gia khá'), (57, 'TC02', 75, N'Tập trung khá'), (57, 'TC03', 75, N'Hoàn thành bài tập khá'), (57, 'TC04', 6, N'Thảo luận khá'), (57, 'TC05', 70, N'Trung bình'), (57, 'TC06', 80, N'Làm việc nhóm khá'), (57, 'TC07', 80, N'Tôn trọng khá'), (57, 'TC08', 80, N'Kỷ luật khá'),
+(58, 'TC01', 80, N'Tham gia tốt'), (58, 'TC02', 85, N'Tập trung tốt'), (58, 'TC03', 85, N'Hoàn thành bài tập tốt'), (58, 'TC04', 8, N'Thảo luận tốt'), (58, 'TC05', 100, N'Chủ động'), (58, 'TC06', 90, N'Làm việc nhóm tốt'), (58, 'TC07', 90, N'Tôn trọng tốt'), (58, 'TC08', 90, N'Kỷ luật tốt'),
+(59, 'TC01', 60, N'Tham gia trung bình'), (59, 'TC02', 65, N'Tập trung trung bình'), (59, 'TC03', 65, N'Hoàn thành bài tập trung bình'), (59, 'TC04', 5, N'Thảo luận trung bình'), (59, 'TC05', 70, N'Trung bình'), (59, 'TC06', 60, N'Làm việc nhóm trung bình'), (59, 'TC07', 60, N'Tôn trọng trung bình'), (59, 'TC08', 60, N'Kỷ luật trung bình'),
+(60, 'TC01', 90, N'Tham gia xuất sắc'), (60, 'TC02', 95, N'Tập trung xuất sắc'), (60, 'TC03', 95, N'Hoàn thành bài tập xuất sắc'), (60, 'TC04', 9, N'Thảo luận xuất sắc'), (60, 'TC05', 100, N'Rất chủ động'), (60, 'TC06', 90, N'Làm việc nhóm tốt'), (60, 'TC07', 90, N'Tôn trọng tốt'), (60, 'TC08', 90, N'Kỷ luật tốt');
+
 -- 1. Liệt kê tất cả sinh viên trong hệ thống kèm thông tin lớp và ngành học
 SELECT sv.maSinhVien, sv.hoTen, sv.gioiTinh, sv.email, 
        l.tenLop, n.tenNganh, k.tenKhoa
