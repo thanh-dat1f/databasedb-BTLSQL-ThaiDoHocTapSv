@@ -844,7 +844,23 @@ SELECT * FROM DanhGiaThaiDoHocTap;
 SELECT * FROM ViPhamKyLuat;
 SELECT * FROM DiemRenLuyen;
 SELECT * FROM ChiTietDanhGia;
-delete from Khoa;
+-- Xóa dữ liệu cũ để đảm bảo đồng bộ
+DELETE FROM ChiTietDanhGia;
+DELETE FROM DiemRenLuyen;
+DELETE FROM ViPhamKyLuat;
+DELETE FROM DanhGiaThaiDoHocTap;
+DELETE FROM DiemDanh;
+DELETE FROM BuoiHoc;
+DELETE FROM DangKyHocPhan;
+DELETE FROM LopHocPhan;
+DELETE FROM TieuChiDanhGia;
+DELETE FROM MonHoc;
+DELETE FROM SinhVien;
+DELETE FROM Lop;
+DELETE FROM GiangVien;
+DELETE FROM NganhHoc;
+DELETE FROM Khoa;
+
 -- Thêm dữ liệu vào bảng Khoa
 INSERT INTO Khoa (maKhoa, tenKhoa, truongKhoa, moTa) VALUES
 ('K01', N'Công trình', N'Nguyễn Văn Hùng', N'Khoa chuyên về kỹ thuật xây dựng và giao thông'),
@@ -890,7 +906,7 @@ INSERT INTO Lop (maLop, tenLop, maKhoa, maNganh, maGVCN, namBatDau) VALUES
 ('L06', N'DTVT01', 'K06', 'N06', 'GV09', 2024),
 ('L07', N'KTMT01', 'K07', 'N07', 'GV11', 2024);
 
--- Thêm dữ liệu vào bảng SinhVien (40 sinh viên)
+-- Thêm dữ liệu vào bảng SinhVien
 INSERT INTO SinhVien (maSinhVien, hoTen, ngaySinh, gioiTinh, email, soDienThoai, diaChi, CCCD, maLop, maNganh, maKhoa, namNhapHoc, trangThai) VALUES
 ('SV001', N'Nguyễn Văn Nam', '2003-05-10', N'Nam', 'namnv001@utc2.edu.vn', '0912345679', N'TP.HCM', '123456789001', 'L01', 'N01', 'K01', 2023, N'Đang học'),
 ('SV002', N'Lê Thị Hồng', '2003-07-15', N'Nữ', 'honglt002@utc2.edu.vn', '0987654322', N'Bình Dương', '987654321002', 'L01', 'N01', 'K01', 2023, N'Đang học'),
@@ -993,7 +1009,7 @@ INSERT INTO LopHocPhan (maLHP, maMonHoc, maGiangVien, hocKy, namHoc, siSoToiDa, 
 -- Thêm dữ liệu vào bảng DangKyHocPhan
 INSERT INTO DangKyHocPhan (maSinhVien, maLHP, ngayDangKy, trangThai, diemGiuaKy, diemCuoiKy, diemThucHanh, diemTong) VALUES
 -- Trạng thái Hoàn thành
-('SV001', 'LHP01', '2023-08-20', N'Hoàn thành', 5.0, 4.5, 5.5, 5.0), -- Điểm thấp
+('SV001', 'LHP01', '2023-08-20', N'Hoàn thành', 5.0, 4.5, 5.5, 5.0),
 ('SV002', 'LHP01', '2023-08-20', N'Hoàn thành', 7.5, 7.0, 8.0, 7.5),
 ('SV003', 'LHP01', '2023-08-20', N'Hoàn thành', 8.5, 8.0, 7.0, 7.8),
 ('SV004', 'LHP01', '2023-08-20', N'Hoàn thành', 7.0, 7.5, 8.5, 7.7),
@@ -1001,7 +1017,7 @@ INSERT INTO DangKyHocPhan (maSinhVien, maLHP, ngayDangKy, trangThai, diemGiuaKy,
 ('SV006', 'LHP01', '2023-08-20', N'Hoàn thành', 6.5, 6.0, 7.0, 6.5),
 ('SV007', 'LHP01', '2023-08-20', N'Hoàn thành', 9.0, 9.5, 9.0, 9.2),
 ('SV008', 'LHP01', '2023-08-20', N'Hoàn thành', 8.5, 8.0, 8.5, 8.3),
-('SV009', 'LHP02', '2023-08-20', N'Hoàn thành', 4.5, 5.0, 4.0, 4.5), -- Điểm thấp
+('SV009', 'LHP02', '2023-08-20', N'Hoàn thành', 4.5, 5.0, 4.0, 4.5),
 ('SV010', 'LHP02', '2023-08-20', N'Hoàn thành', 7.5, 7.5, 7.5, 7.5),
 ('SV011', 'LHP02', '2023-08-20', N'Hoàn thành', 8.0, 8.0, 8.0, 8.0),
 ('SV012', 'LHP02', '2023-08-20', N'Hoàn thành', 7.0, 7.0, 7.5, 7.2),
@@ -1009,7 +1025,7 @@ INSERT INTO DangKyHocPhan (maSinhVien, maLHP, ngayDangKy, trangThai, diemGiuaKy,
 ('SV014', 'LHP02', '2023-08-20', N'Hoàn thành', 6.0, 6.5, 7.0, 6.5),
 ('SV015', 'LHP02', '2023-08-20', N'Hoàn thành', 9.0, 9.0, 9.0, 9.0),
 ('SV016', 'LHP02', '2023-08-20', N'Hoàn thành', 8.0, 8.0, 8.0, 8.0),
-('SV017', 'LHP03', '2023-08-20', N'Hoàn thành', 5.5, 5.0, 4.5, 5.0), -- Điểm thấp
+('SV017', 'LHP03', '2023-08-20', N'Hoàn thành', 5.5, 5.0, 4.5, 5.0),
 ('SV018', 'LHP03', '2023-08-20', N'Hoàn thành', 7.5, 7.5, 8.0, 7.7),
 ('SV019', 'LHP03', '2023-08-20', N'Hoàn thành', 8.5, 8.0, 7.0, 7.8),
 ('SV020', 'LHP03', '2023-08-20', N'Hoàn thành', 7.0, 7.5, 8.5, 7.7),
@@ -1115,11 +1131,9 @@ INSERT INTO BuoiHoc (maLHP, ngayHoc, gioBatDau, gioKetThuc, phongHoc, chuDe, tra
 ('LHP10', '2025-02-17', '13:30:00', '15:30:00', 'P110', N'Lập trình giao diện', N'Chưa diễn ra'),
 ('LHP11', '2025-02-11', '07:30:00', '09:30:00', 'P111', N'Thiết kế cầu', N'Chưa diễn ra'),
 ('LHP11', '2025-02-18', '07:30:00', '09:30:00', 'P111', N'Kết cấu bê tông', N'Chưa diễn ra'),
--- Thêm buổi học giả lập đã diễn ra
 ('LHP08', '2024-09-18', '07:30:00', '09:30:00', 'P108', N'Giới thiệu mạch điện tử', N'Đã diễn ra'),
 ('LHP09', '2024-09-19', '09:45:00', '11:45:00', 'P109', N'Tổng quan quản lý chất thải', N'Đã diễn ra');
 
--- Thêm dữ liệu vào bảng DiemDanh
 -- Thêm dữ liệu vào bảng DiemDanh
 INSERT INTO DiemDanh (maSinhVien, maBuoi, trangThai, thoiGianGhi, ghiChu) VALUES
 -- LHP01 (maBuoi 1, 2)
@@ -1207,32 +1221,32 @@ INSERT INTO DiemDanh (maSinhVien, maBuoi, trangThai, thoiGianGhi, ghiChu) VALUES
 ('SV038', 10, N'Có mặt', '2024-02-27 09:45:00', NULL),
 ('SV039', 10, N'Có mặt', '2024-02-27 09:45:00', NULL),
 ('SV040', 10, N'Có mặt', '2024-02-27 09:45:00', NULL),
--- LHP08 (maBuoi 13)
-('SV041', 13, N'Có mặt', '2024-09-18 07:30:00', NULL),
-('SV042', 13, N'Có mặt', '2024-09-18 07:30:00', NULL),
-('SV043', 13, N'Vắng mặt', '2024-09-18 07:30:00', N'Không có phép'),
-('SV044', 13, N'Có mặt', '2024-09-18 07:30:00', NULL),
-('SV045', 13, N'Có phép', '2024-09-18 07:30:00', N'Xin nghỉ ốm'),
-('SV046', 13, N'Có mặt', '2024-09-18 07:30:00', NULL),
-('SV047', 13, N'Có mặt', '2024-09-18 07:30:00', NULL),
-('SV048', 13, N'Có mặt', '2024-09-18 07:30:00', NULL),
--- LHP09 (maBuoi 14)
-('SV049', 14, N'Có mặt', '2024-09-19 09:45:00', NULL),
-('SV050', 14, N'Có mặt', '2024-09-19 09:45:00', NULL),
-('SV051', 14, N'Vắng mặt', '2024-09-19 09:45:00', N'Không có phép'),
-('SV052', 14, N'Có mặt', '2024-09-19 09:45:00', NULL),
-('SV053', 14, N'Có phép', '2024-09-19 09:45:00', N'Xin nghỉ gia đình'),
-('SV054', 14, N'Có mặt', '2024-09-19 09:45:00', NULL),
-('SV055', 14, N'Có mặt', '2024-09-19 09:45:00', NULL),
-('SV056', 14, N'Có mặt', '2024-09-19 09:45:00', NULL);
-DELETE FROM DiemDanh;
+-- LHP08 (maBuoi 21)
+('SV041', 21, N'Có mặt', '2024-09-18 07:30:00', NULL),
+('SV042', 21, N'Có mặt', '2024-09-18 07:30:00', NULL),
+('SV043', 21, N'Vắng mặt', '2024-09-18 07:30:00', N'Không có phép'),
+('SV044', 21, N'Có mặt', '2024-09-18 07:30:00', NULL),
+('SV045', 21, N'Có phép', '2024-09-18 07:30:00', N'Xin nghỉ ốm'),
+('SV046', 21, N'Có mặt', '2024-09-18 07:30:00', NULL),
+('SV047', 21, N'Có mặt', '2024-09-18 07:30:00', NULL),
+('SV048', 21, N'Có mặt', '2024-09-18 07:30:00', NULL),
+-- LHP09 (maBuoi 22)
+('SV049', 22, N'Có mặt', '2024-09-19 09:45:00', NULL),
+('SV050', 22, N'Có mặt', '2024-09-19 09:45:00', NULL),
+('SV051', 22, N'Vắng mặt', '2024-09-19 09:45:00', N'Không có phép'),
+('SV052', 22, N'Có mặt', '2024-09-19 09:45:00', NULL),
+('SV053', 22, N'Có phép', '2024-09-19 09:45:00', N'Xin nghỉ gia đình'),
+('SV054', 22, N'Có mặt', '2024-09-19 09:45:00', NULL),
+('SV055', 22, N'Có mặt', '2024-09-19 09:45:00', NULL),
+('SV056', 22, N'Có mặt', '2024-09-19 09:45:00', NULL);
+
 -- Thêm dữ liệu vào bảng DanhGiaThaiDoHocTap
 INSERT INTO DanhGiaThaiDoHocTap (maSinhVien, maLHP, ngayDanhGia, nguoiDanhGia, tyLeThamGia, mucDoTapTrung, hoanThanhBaiTap, thamGiaThaoLuan, tinhChuDong, lamViecNhom, tonTrong, ghiChu) VALUES
-('SV001', 'LHP01', '2023-12-10', 'GV01', 40, N'Kém', 50, 3, N'Thụ động', N'Kém', N'Kém', N'Cần cải thiện'), -- tyLeThamGia dưới 50%
-('SV002', 'LHP01', '2023-12-10', 'GV01', 55, N'Trung bình', 60, 4, N'Trung bình', N'Trung bình', N'Trung bình', N'Ổn định'), -- tyLeThamGia 50-59%
-('SV003', 'LHP01', '2023-12-10', 'GV01', 70, N'Khá', 75, 6, N'Trung bình', N'Khá', N'Khá', N'Ổn định'), -- tyLeThamGia 70-79%
-('SV004', 'LHP01', '2023-12-10', 'GV01', 85, N'Tốt', 80, 8, N'Chủ động', N'Tốt', N'Tốt', N'Tích cực'), -- tyLeThamGia 80-89%
-('SV005', 'LHP01', '2023-12-10', 'GV01', 95, N'Xuất sắc', 90, 9, N'Chủ động', N'Tốt', N'Tốt', N'Rất xuất sắc'), -- tyLeThamGia 90-100%
+('SV001', 'LHP01', '2023-12-10', 'GV01', 40, N'Kém', 50, 3, N'Thụ động', N'Kém', N'Kém', N'Cần cải thiện'),
+('SV002', 'LHP01', '2023-12-10', 'GV01', 55, N'Trung bình', 60, 4, N'Trung bình', N'Trung bình', N'Trung bình', N'Ổn định'),
+('SV003', 'LHP01', '2023-12-10', 'GV01', 70, N'Khá', 75, 6, N'Trung bình', N'Khá', N'Khá', N'Ổn định'),
+('SV004', 'LHP01', '2023-12-10', 'GV01', 85, N'Tốt', 80, 8, N'Chủ động', N'Tốt', N'Tốt', N'Tích cực'),
+('SV005', 'LHP01', '2023-12-10', 'GV01', 95, N'Xuất sắc', 90, 9, N'Chủ động', N'Tốt', N'Tốt', N'Rất xuất sắc'),
 ('SV006', 'LHP01', '2023-12-10', 'GV01', 60, N'Trung bình', 65, 5, N'Trung bình', N'Trung bình', N'Trung bình', N'Ổn định'),
 ('SV007', 'LHP01', '2023-12-10', 'GV01', 80, N'Tốt', 85, 8, N'Chủ động', N'Tốt', N'Tốt', N'Tích cực'),
 ('SV008', 'LHP01', '2023-12-10', 'GV01', 90, N'Xuất sắc', 95, 9, N'Chủ động', N'Tốt', N'Tốt', N'Rất xuất sắc'),
@@ -1268,7 +1282,6 @@ INSERT INTO DanhGiaThaiDoHocTap (maSinhVien, maLHP, ngayDanhGia, nguoiDanhGia, t
 ('SV038', 'LHP05', '2024-05-10', 'GV07', 60, N'Kém', 70, 5, N'Thụ động', N'Kém', N'Trung bình', N'Cần cải thiện'),
 ('SV039', 'LHP05', '2024-05-10', 'GV07', 75, N'Khá', 70, 7, N'Trung bình', N'Khá', N'Khá', N'Ổn định'),
 ('SV040', 'LHP05', '2024-05-10', 'GV07', 80, N'Tốt', 85, 8, N'Chủ động', N'Tốt', N'Tốt', N'Tích cực'),
--- LHP08
 ('SV041', 'LHP08', '2024-12-10', 'GV09', 90, N'Xuất sắc', 95, 9, N'Chủ động', N'Tốt', N'Tốt', N'Rất xuất sắc'),
 ('SV042', 'LHP08', '2024-12-10', 'GV09', 80, N'Tốt', 85, 8, N'Chủ động', N'Tốt', N'Tốt', N'Tích cực'),
 ('SV043', 'LHP08', '2024-12-10', 'GV09', 40, N'Kém', 50, 3, N'Thụ động', N'Kém', N'Kém', N'Cần cải thiện'),
@@ -1277,7 +1290,6 @@ INSERT INTO DanhGiaThaiDoHocTap (maSinhVien, maLHP, ngayDanhGia, nguoiDanhGia, t
 ('SV046', 'LHP08', '2024-12-10', 'GV09', 85, N'Tốt', 80, 8, N'Chủ động', N'Tốt', N'Tốt', N'Tích cực'),
 ('SV047', 'LHP08', '2024-12-10', 'GV09', 95, N'Xuất sắc', 90, 9, N'Chủ động', N'Tốt', N'Tốt', N'Rất xuất sắc'),
 ('SV048', 'LHP08', '2024-12-10', 'GV09', 70, N'Khá', 75, 6, N'Trung bình', N'Khá', N'Khá', N'Ổn định'),
--- LHP09
 ('SV049', 'LHP09', '2024-12-10', 'GV11', 90, N'Xuất sắc', 95, 9, N'Chủ động', N'Tốt', N'Tốt', N'Rất xuất sắc'),
 ('SV050', 'LHP09', '2024-12-10', 'GV11', 80, N'Tốt', 85, 8, N'Chủ động', N'Tốt', N'Tốt', N'Tích cực'),
 ('SV051', 'LHP09', '2024-12-10', 'GV11', 40, N'Kém', 50, 3, N'Thụ động', N'Kém', N'Kém', N'Cần cải thiện'),
@@ -1286,7 +1298,6 @@ INSERT INTO DanhGiaThaiDoHocTap (maSinhVien, maLHP, ngayDanhGia, nguoiDanhGia, t
 ('SV054', 'LHP09', '2024-12-10', 'GV11', 85, N'Tốt', 80, 8, N'Chủ động', N'Tốt', N'Tốt', N'Tích cực'),
 ('SV055', 'LHP09', '2024-12-10', 'GV11', 95, N'Xuất sắc', 90, 9, N'Chủ động', N'Tốt', N'Tốt', N'Rất xuất sắc'),
 ('SV056', 'LHP09', '2024-12-10', 'GV11', 70, N'Khá', 75, 6, N'Trung bình', N'Khá', N'Khá', N'Ổn định'),
--- Một số sinh viên cũ trong LHP04 và LHP05
 ('SV057', 'LHP04', '2024-05-10', 'GV03', 70, N'Khá', 75, 6, N'Trung bình', N'Khá', N'Khá', N'Ổn định'),
 ('SV058', 'LHP05', '2024-05-10', 'GV07', 80, N'Tốt', 85, 8, N'Chủ động', N'Tốt', N'Tốt', N'Tích cực'),
 ('SV059', 'LHP03', '2023-12-10', 'GV04', 60, N'Trung bình', 65, 5, N'Trung bình', N'Trung bình', N'Trung bình', N'Ổn định'),
@@ -1347,7 +1358,6 @@ INSERT INTO DiemRenLuyen (maSinhVien, hocKy, namHoc, diemTuDanhGia, diemLop, die
 ('SV038', '2', '2023-2024', 65, 60, 62, 57, N'Trung bình', 'GV07', '2024-05-20', 0, NULL, NULL, N'Có vi phạm'),
 ('SV039', '2', '2023-2024', 80, 75, 78, 78, N'Khá', 'GV07', '2024-05-20', 0, NULL, NULL, NULL),
 ('SV040', '2', '2023-2024', 85, 80, 82, 82, N'Khá', 'GV07', '2024-05-20', 0, NULL, NULL, NULL),
--- Học kỳ 1, 2024-2025 (cho sinh viên mới)
 ('SV041', '1', '2024-2025', 95, 90, 92, 92, N'Xuất sắc', 'GV09', '2024-12-20', 1, N'Xuất sắc', 7000000, N'Rất xuất sắc'),
 ('SV042', '1', '2024-2025', 85, 80, 82, 82, N'Khá', 'GV09', '2024-12-20', 0, NULL, NULL, NULL),
 ('SV043', '1', '2024-2025', 50, 45, 48, 38, N'Yếu', 'GV09', '2024-12-20', 0, NULL, NULL, N'Có vi phạm'),
@@ -1364,7 +1374,6 @@ INSERT INTO DiemRenLuyen (maSinhVien, hocKy, namHoc, diemTuDanhGia, diemLop, die
 ('SV054', '1', '2024-2025', 85, 80, 82, 82, N'Khá', 'GV11', '2024-12-20', 0, NULL, NULL, NULL),
 ('SV055', '1', '2024-2025', 90, 85, 88, 88, N'Tốt', 'GV11', '2024-12-20', 1, N'Khá', 5000000, N'Tích cực'),
 ('SV056', '1', '2024-2025', 70, 65, 68, 68, N'Trung bình', 'GV11', '2024-12-20', 0, NULL, NULL, NULL),
--- Học kỳ 2, 2023-2024 (cho sinh viên cũ)
 ('SV057', '2', '2023-2024', 75, 70, 72, 52, N'Trung bình', 'GV03', '2024-05-20', 0, NULL, NULL, N'Có vi phạm'),
 ('SV058', '2', '2023-2024', 85, 80, 82, 82, N'Khá', 'GV07', '2024-05-20', 0, NULL, NULL, NULL),
 ('SV059', '1', '2023-2024', 65, 60, 62, 32, N'Yếu', 'GV04', '2023-12-20', 0, NULL, NULL, N'Có vi phạm'),
@@ -1382,9 +1391,6 @@ INSERT INTO ChiTietDanhGia (maDanhGia, maTieuChi, diem, ghiChu) VALUES
 (43, 'TC01', 40, N'Tham gia kém'), (43, 'TC02', 50, N'Tập trung kém'), (43, 'TC03', 50, N'Hoàn thành bài tập kém'), (43, 'TC04', 3, N'Thảo luận kém'), (43, 'TC05', 40, N'Thụ động'), (43, 'TC06', 40, N'Làm việc nhóm kém'), (43, 'TC07', 40, N'Tôn trọng kém'), (43, 'TC08', 40, N'Kỷ luật kém'),
 (44, 'TC01', 75, N'Tham gia khá'), (44, 'TC02', 70, N'Tập trung khá'), (44, 'TC03', 70, N'Hoàn thành bài tập khá'), (44, 'TC04', 7, N'Thảo luận khá'), (44, 'TC05', 70, N'Trung bình'), (44, 'TC06', 80, N'Làm việc nhóm khá'), (44, 'TC07', 80, N'Tôn trọng khá'), (44, 'TC08', 80, N'Kỷ luật khá'),
 (45, 'TC01', 60, N'Tham gia trung bình'), (45, 'TC02', 65, N'Tập trung trung bình'), (45, 'TC03', 65, N'Hoàn thành bài tập trung bình'), (45, 'TC04', 5, N'Thảo luận trung bình'), (45, 'TC05', 70, N'Trung bình'), (45, 'TC06', 60, N'Làm việc nhóm trung bình'), (45, 'TC07', 60, N'Tôn trọng trung bình'), (45, 'TC08', 60, N'Kỷ luật trung bình');
-DELETE FROM DiemDanh;
-DELETE FROM BuoiHoc;
-DELETE FROM DangKyHocPhan;
 -- 1. Liệt kê tất cả sinh viên trong hệ thống kèm thông tin lớp và ngành học
 SELECT sv.maSinhVien, sv.hoTen, sv.gioiTinh, sv.email, 
        l.tenLop, n.tenNganh, k.tenKhoa
